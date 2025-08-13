@@ -19,6 +19,21 @@
   <script src="{{asset 'script.js'}}"></script>
 </head>
 <body>
+{{!-- ヘッダー --}}
+<header class="site-header">
+  <div class="container">
+    <nav class="header-nav">
+      <a href="/hc/ja" class="header-logo">{{help_center.name}}</a>
+      <div class="header-links">
+        <a href="/hc/ja">ホーム</a>
+        <a href="/hc/ja/categories">カテゴリ</a>
+        <a href="/hc/ja/requests/new">お問い合わせ</a>
+        <a href="/hc/ja/signin">ログイン</a>
+      </div>
+    </nav>
+  </div>
+</header>
+
 {{!-- ヒーローセクション --}}
 <div class="hero-section">
   <div class="container">
@@ -99,6 +114,8 @@
     </div>
   </div>
 </div>
+
+{{!-- フッター --}}
 <footer class="footer">
   <div class="container">
     <div class="footer-content">
