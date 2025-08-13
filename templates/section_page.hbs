@@ -1,0 +1,22 @@
+{{!-- Section Page Template --}}
+<div class="section-container">
+  <header class="section-header">
+    <h1>{{section.name}}</h1>
+    {{#if section.description}}
+      <p class="section-description">{{section.description}}</p>
+    {{/if}}
+  </header>
+
+  <div class="articles-grid">
+    {{#each articles}}
+      <article class="article-card">
+        <a href="{{url}}" class="article-link">
+          <h2 class="article-title">{{title}}</h2>
+          {{#if body}}
+            <p class="article-excerpt">{{truncate body 150}}</p>
+          {{/if}}
+        </a>
+      </article>
+    {{/each}}
+  </div>
+</div>
