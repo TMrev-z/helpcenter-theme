@@ -102,6 +102,23 @@ manifest.json             # テーマ設定
 - Safari 14+
 - Edge 90+
 
+## ロールバック手順
+
+### 直前バージョンに戻す
+
+```bash
+# GitHub Actionsのバックアップから復元
+zcli themes:upload --brand <BRAND_ID> --theme <THEME_ID> --path backups/theme-<timestamp>
+
+# または管理画面から前バージョンをLiveに設定
+```
+
+### テーマ履歴から復元
+
+1. Zendesk管理画面 → ヘルプセンター → テーマ
+2. 「テーマを管理」→ 目的のバージョンを選択
+3. 「Liveに設定」をクリック
+
 ## ライセンス
 
 MIT License

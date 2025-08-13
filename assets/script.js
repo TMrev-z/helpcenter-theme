@@ -59,7 +59,13 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   }
   
-  // 5. パフォーマンス: 画像遅延読み込み
+  // 5. パフォーマンス: 画像遅延読み込み（自動付与 + フォールバック）
+  // 未指定の画像にlazy loading属性を自動付与
+  document.querySelectorAll('img:not([loading])').forEach(img => {
+    img.setAttribute('loading', 'lazy');
+  });
+  
+  // ブラウザサポートのフォールバック
   if ('loading' in HTMLImageElement.prototype) {
     const images = document.querySelectorAll('img[loading="lazy"]');
     images.forEach(img => {
