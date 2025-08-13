@@ -151,21 +151,28 @@ jobs:
           # Use a simpler approach: create curl command with explicit parameters
           echo "📤 Uploading theme package..."
           
-          # Try direct upload with key parameters extracted individually
+          # Extract all parameters including additional S3 fields
           KEY=$(echo "$JOB" | jq -r '.job.data.upload.parameters.key // empty')
           POLICY=$(echo "$JOB" | jq -r '.job.data.upload.parameters.policy // empty')
-          SIGNATURE=$(echo "$JOB" | jq -r '.job.data.upload.parameters.signature // empty')
           CREDENTIAL=$(echo "$JOB" | jq -r '.job.data.upload.parameters."x-amz-credential" // empty')
           DATE=$(echo "$JOB" | jq -r '.job.data.upload.parameters."x-amz-date" // empty')
           ALGORITHM=$(echo "$JOB" | jq -r '.job.data.upload.parameters."x-amz-algorithm" // empty')
+          SIGNATURE=$(echo "$JOB" | jq -r '.job.data.upload.parameters."x-amz-signature" // empty')
+          EXPIRES=$(echo "$JOB" | jq -r '.job.data.upload.parameters.Expires // empty')
+          ENCRYPTION=$(echo "$JOB" | jq -r '.job.data.upload.parameters."x-amz-server-side-encryption" // empty')
+          SUCCESS_STATUS=$(echo "$JOB" | jq -r '.job.data.upload.parameters.success_action_status // empty')
           
           echo "Key: $KEY"
           echo "Policy present: $([ -n "$POLICY" ] && echo "Yes" || echo "No")"
           echo "Signature present: $([ -n "$SIGNATURE" ] && echo "Yes" || echo "No")"
+          echo "Expires: $EXPIRES"
           
-          # Upload with explicit form fields
+          # Upload with all required form fields in correct order
           UPLOAD_RESULT=$(curl -sS -X POST \
             -F "key=$KEY" \
+            -F "Expires=$EXPIRES" \
+            -F "x-amz-server-side-encryption=$ENCRYPTION" \
+            -F "success_action_status=$SUCCESS_STATUS" \
             -F "policy=$POLICY" \
             -F "x-amz-credential=$CREDENTIAL" \
             -F "x-amz-algorithm=$ALGORITHM" \
@@ -174,6 +181,13 @@ jobs:
             -F "file=@theme.zip" \
             "$URL")
           echo "Upload result: $UPLOAD_RESULT"
+          
+          # Check for S3 upload errors  
+          if echo "$UPLOAD_RESULT" | grep -q "<Error>"; then
+            echo "❌ S3 upload failed:"
+            echo "$UPLOAD_RESULT"
+            exit 1
+          fi
           
           # Poll job status until completion
           echo "⏳ Waiting for theme import to complete..."
