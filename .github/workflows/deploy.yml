@@ -143,15 +143,36 @@ jobs:
           echo "Job ID: $JOB_ID"
           echo "Upload URL: $URL"
           
-          # Build form parameters for multipart upload
-          PARAMS=""
-          for key in $(echo "$JOB" | jq -r '.job.data.upload.parameters | keys[]'); do
-            value=$(echo "$JOB" | jq -r ".job.data.upload.parameters.$key")
-            PARAMS="$PARAMS -F $key=$value"
-          done
+          # Extract and prepare upload parameters safely
+          echo "🔧 Extracting upload parameters..."
+          echo "$JOB" | jq '.job.data.upload.parameters' > /tmp/upload_params.json
+          cat /tmp/upload_params.json
           
-          # Upload theme package
-          UPLOAD_RESULT=$(curl -sS -X POST $PARAMS -F file=@theme.zip "$URL")
+          # Use a simpler approach: create curl command with explicit parameters
+          echo "📤 Uploading theme package..."
+          
+          # Try direct upload with key parameters extracted individually
+          KEY=$(echo "$JOB" | jq -r '.job.data.upload.parameters.key // empty')
+          POLICY=$(echo "$JOB" | jq -r '.job.data.upload.parameters.policy // empty')
+          SIGNATURE=$(echo "$JOB" | jq -r '.job.data.upload.parameters.signature // empty')
+          CREDENTIAL=$(echo "$JOB" | jq -r '.job.data.upload.parameters."x-amz-credential" // empty')
+          DATE=$(echo "$JOB" | jq -r '.job.data.upload.parameters."x-amz-date" // empty')
+          ALGORITHM=$(echo "$JOB" | jq -r '.job.data.upload.parameters."x-amz-algorithm" // empty')
+          
+          echo "Key: $KEY"
+          echo "Policy present: $([ -n "$POLICY" ] && echo "Yes" || echo "No")"
+          echo "Signature present: $([ -n "$SIGNATURE" ] && echo "Yes" || echo "No")"
+          
+          # Upload with explicit form fields
+          UPLOAD_RESULT=$(curl -sS -X POST \
+            -F "key=$KEY" \
+            -F "policy=$POLICY" \
+            -F "x-amz-credential=$CREDENTIAL" \
+            -F "x-amz-algorithm=$ALGORITHM" \
+            -F "x-amz-date=$DATE" \
+            -F "x-amz-signature=$SIGNATURE" \
+            -F "file=@theme.zip" \
+            "$URL")
           echo "Upload result: $UPLOAD_RESULT"
           
           # Poll job status until completion
