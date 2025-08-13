@@ -130,26 +130,18 @@ jobs:
           # テーマインポート実行（エラー時は処理を停止）
           echo "📥 Importing theme to Zendesk..."
           
-          if [ -n "$BRAND_ID" ]; then
-            echo "Using brand ID: $BRAND_ID"
-            # 非対話モードで実行するため、入力を事前提供
-            echo "Attempting automatic brand selection..."
-            
-            # 複数のアプローチを試行
-            {
-              # アプローチ1: 矢印キー + Enter をシミュレート
-              printf '\n' | zcli themes:import --brand "$BRAND_ID" 2>&1
-            } || {
-              # アプローチ2: 数字入力を試行（1番目の選択肢を選択）
-              printf '1\n' | zcli themes:import --brand "$BRAND_ID" 2>&1
-            } || {
-              # アプローチ3: 選択肢なしで再試行
-              zcli themes:import --brand "$BRAND_ID" --no-interactive 2>&1 || true
-            }
-          else
-            echo "Using default brand"
-            printf '\n' | zcli themes:import 2>&1 || printf '1\n' | zcli themes:import 2>&1
-          fi
+          # シンプルなテーマインポート（ブランドIDなしで自動選択）
+          echo "📥 Importing theme with automatic brand selection..."
+          
+          # 標準的なimportコマンドを使用
+          {
+            printf '\n' | zcli themes:import 2>&1
+          } || {
+            printf '1\n' | zcli themes:import 2>&1
+          } || {
+            echo "Both automatic selection methods failed"
+            exit 1
+          }
           
           # 成功確認（エラーがなければ成功とみなす）
           if [ $? -eq 0 ]; then
@@ -159,49 +151,26 @@ jobs:
           fi
       
       - name: Publish theme to live
-        env:
-          BRAND_ID: ${{ secrets.ZENDESK_BRAND_ID }}
         run: |
           echo "🚀 Publishing theme to live environment..."
           
-          # テーマ一覧を取得してDark Hero Themeを探す
-          echo "📋 Finding Dark Hero Theme..."
+          # テーマ一覧を確認
+          echo "📋 Checking theme list..."
+          printf '\n' | zcli themes:list 2>&1 || true
           
-          # themes:listコマンドでテーマIDを取得を試行
-          THEME_LIST_OUTPUT=$(printf '\n' | zcli themes:list --brand "$BRAND_ID" 2>/dev/null || true)
-          echo "Theme list output: $THEME_LIST_OUTPUT"
+          # 利用可能なコマンドを確認
+          echo "🔍 Checking available commands..."
+          zcli --help | grep -i theme || true
           
-          # テーマ公開を複数アプローチで試行
-          echo "🔄 Attempting to publish theme..."
-          
-          # アプローチ1: themes:publishコマンドが利用可能か確認
+          # themes:publishコマンドを試行
           if zcli themes:publish --help >/dev/null 2>&1; then
-            echo "Using themes:publish command"
-            printf '\n' | zcli themes:publish --brand "$BRAND_ID" 2>&1 || \
-            printf '1\n' | zcli themes:publish --brand "$BRAND_ID" 2>&1 || \
-            echo "Direct publish failed, continuing..."
+            echo "📢 Using themes:publish command..."
+            printf '\n' | zcli themes:publish 2>&1 || printf '1\n' | zcli themes:publish 2>&1 || true
           else
-            echo "themes:publish command not available"
+            echo "❌ themes:publish not available"
           fi
           
-          # アプローチ2: themes:updateコマンドでlive状態に更新を試行
-          if zcli themes:update --help >/dev/null 2>&1; then
-            echo "Trying themes:update command"
-            printf '\n' | zcli themes:update --brand "$BRAND_ID" --live 2>&1 || \
-            printf '1\n' | zcli themes:update --brand "$BRAND_ID" --live 2>&1 || \
-            echo "Update to live failed, continuing..."
-          else
-            echo "themes:update command not available"
-          fi
-          
-          # アプローチ3: importコマンドに--liveフラグを追加して再実行
-          echo "Re-importing with --live flag..."
-          printf '\n' | zcli themes:import --brand "$BRAND_ID" --live 2>&1 || \
-          printf '1\n' | zcli themes:import --brand "$BRAND_ID" --live 2>&1 || \
-          echo "Import with live flag completed"
-          
-          echo "🎯 Theme publishing process completed"
-          echo "Please check the help center to verify the theme is live"
+          echo "🎯 Publishing attempt completed"
       
       - name: Create deployment record
         uses: actions/github-script@v7
