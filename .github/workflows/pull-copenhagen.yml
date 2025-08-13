@@ -1,0 +1,54 @@
+name: Pull Copenhagen Official Theme
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  NODE_VERSION: '20'
+
+jobs:
+  pull-theme:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: ${{ env.NODE_VERSION }} }
+      - run: npm i -g @zendesk/zcli
+      
+      - name: Login to Zendesk
+        env:
+          ZENDESK_SUBDOMAIN: ${{ secrets.ZENDESK_SUBDOMAIN }}
+          ZENDESK_EMAIL: ${{ secrets.ZENDESK_EMAIL }}
+          ZENDESK_API_TOKEN: ${{ secrets.ZENDESK_API_TOKEN }}
+        run: |
+          zcli login --subdomain "$ZENDESK_SUBDOMAIN" --email "$ZENDESK_EMAIL" --token "$ZENDESK_API_TOKEN"
+      
+      - name: List Available Themes
+        env:
+          BRAND_ID: ${{ secrets.ZENDESK_BRAND_ID }}
+        run: |
+          echo "Available themes for brand $BRAND_ID:"
+          zcli themes:list --brand "$BRAND_ID"
+      
+      - name: Pull Copenhagen Base Theme
+        env:
+          BRAND_ID: ${{ secrets.ZENDESK_BRAND_ID }}
+          THEME_ID: ${{ secrets.ZENDESK_THEME_ID }}
+        run: |
+          echo "Pulling theme $THEME_ID from brand $BRAND_ID"
+          zcli themes:pull --brand "$BRAND_ID" --theme "$THEME_ID" --path copenhagen-official
+          
+      - name: Show Theme Structure
+        run: |
+          echo "Copenhagen theme structure:"
+          find copenhagen-official -name "*.hbs" | sort
+          echo "Assets:"
+          find copenhagen-official -name "*.css" -o -name "*.js" | sort
+          
+      - name: Upload Copenhagen Theme as Artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: copenhagen-official-theme
+          path: copenhagen-official/
