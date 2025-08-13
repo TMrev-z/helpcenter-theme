@@ -1,0 +1,17 @@
+{{!-- Community Topic List Page Template --}}
+<div class="community-topics-container">
+  <header class="topics-header">
+    <h1>コミュニティトピック</h1>
+  </header>
+  <div class="topics-list">
+    {{#each topics}}
+      <article class="topic-item">
+        <a href="{{url}}" class="topic-link">
+          <h2 class="topic-title">{{title}}</h2>
+        </a>
+      </article>
+    {{else}}
+      <p>トピックがありません。</p>
+    {{/each}}
+  </div>
+</div>
