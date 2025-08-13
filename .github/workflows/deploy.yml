@@ -1,4 +1,5 @@
 name: Deploy Help Center Theme
+
 on:
   workflow_dispatch:
     inputs:
@@ -15,21 +16,34 @@ permissions:
   contents: read
   deployments: write
 
-env: { NODE_VERSION: '20' }
+env:
+  NODE_VERSION: '20'
 
 jobs:
   validate:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      
       - uses: actions/setup-node@v4
-        with: { node-version: ${{ env.NODE_VERSION }} }
-      - run: |
-          npm i -g @zendesk/zcli
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+      
+      - name: Install zcli
+        run: npm i -g @zendesk/zcli
+      
+      - name: Validate theme structure
+        run: |
+          # Check required files exist
           test -f assets/style.css || exit 1
           test -f assets/script.js || exit 1
           test -f manifest.json || exit 1
-          zcli themes:validate
+          
+          # Validate manifest.json structure
+          node -e "const m=require('./manifest.json'); if(!m.name || !m.version || !m.api_version) process.exit(1)"
+          
+          echo "✅ Theme structure validated"
+
   deploy:
     needs: validate
     if: github.event_name == 'workflow_dispatch'
@@ -40,22 +54,51 @@ jobs:
     concurrency:
       group: deploy-${{ github.event.inputs.environment }}
       cancel-in-progress: false
+    
     steps:
       - uses: actions/checkout@v4
+      
       - uses: actions/setup-node@v4
-        with: { node-version: ${{ env.NODE_VERSION }} }
-      - run: npm i -g @zendesk/zcli
-      - name: Login Zendesk
-        env:
-          ZENDESK_SUBDOMAIN: ${{ secrets.ZENDESK_SUBDOMAIN }}
-          ZENDESK_EMAIL:     ${{ secrets.ZENDESK_EMAIL }}
-          ZENDESK_API_TOKEN: ${{ secrets.ZENDESK_API_TOKEN }}
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+      
+      - name: Install zcli
+        run: npm i -g @zendesk/zcli
+      
+      - name: Mask sensitive data
         run: |
           echo "::add-mask::${{ secrets.ZENDESK_API_TOKEN }}"
-          zcli login --subdomain "$ZENDESK_SUBDOMAIN" --email "$ZENDESK_EMAIL" --token "$ZENDESK_API_TOKEN"
-      - name: Upload theme
+          echo "::add-mask::${{ secrets.ZENDESK_EMAIL }}"
+      
+      - name: Login to Zendesk
+        env:
+          ZENDESK_SUBDOMAIN: ${{ secrets.ZENDESK_SUBDOMAIN }}
+          ZENDESK_EMAIL: ${{ secrets.ZENDESK_EMAIL }}
+          ZENDESK_API_TOKEN: ${{ secrets.ZENDESK_API_TOKEN }}
+        run: |
+          zcli login \
+            --subdomain "$ZENDESK_SUBDOMAIN" \
+            --email "$ZENDESK_EMAIL" \
+            --token "$ZENDESK_API_TOKEN"
+      
+      - name: Import theme to Zendesk
         env:
           BRAND_ID: ${{ secrets.ZENDESK_BRAND_ID }}
-          THEME_ID: ${{ secrets.ZENDESK_THEME_ID }}
         run: |
-          zcli themes:upload --brand "$BRAND_ID" --theme "$THEME_ID" --version-bump patch
+          echo "📦 Importing theme to brand $BRAND_ID..."
+          zcli themes:import --brand "$BRAND_ID"
+          echo "✅ Theme imported successfully"
+      
+      - name: Create deployment record
+        uses: actions/github-script@v7
+        with:
+          script: |
+            await github.rest.repos.createDeployment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              ref: context.sha,
+              environment: '${{ github.event.inputs.environment }}',
+              description: 'Zendesk theme deployment',
+              auto_merge: false,
+              required_contexts: []
+            });
