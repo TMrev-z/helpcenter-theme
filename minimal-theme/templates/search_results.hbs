@@ -1,0 +1,9 @@
+{{!-- templates/search_results.hbs --}}
+{{> header}}
+<main class="container">
+  <h1>検索結果</h1>
+  {{#if results}}
+    <ul>{{#each results}}<li><a href="{{url}}">{{title}}</a></li>{{/each}}</ul>
+  {{else}}<p>該当する結果は見つかりませんでした。</p>{{/if}}
+</main>
+{{> footer}}

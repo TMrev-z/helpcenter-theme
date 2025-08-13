@@ -1,0 +1,17 @@
+{{!-- Error Page Template --}}
+<div class="error-container">
+  <div class="error-content">
+    <h1 class="error-title">{{#if status_code}}{{status_code}}{{else}}エラー{{/if}}</h1>
+    
+    {{#if message}}
+      <p class="error-message">{{message}}</p>
+    {{else}}
+      <p class="error-message">申し訳ございません。問題が発生しました。</p>
+    {{/if}}
+
+    <div class="error-actions">
+      <a href="/" class="btn btn-primary">ホームに戻る</a>
+      <a href="/hc/requests/new" class="btn btn-secondary">お問い合わせ</a>
+    </div>
+  </div>
+</div>

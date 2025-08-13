@@ -1,0 +1,40 @@
+<div class="container">
+  <nav class="breadcrumbs">
+    <a href="{{help_center.url}}">{{help_center.name}}</a>
+    <span class="breadcrumb-separator">›</span>
+    <a href="{{section.url}}">{{section.name}}</a>
+    <span class="breadcrumb-separator">›</span>
+    <span>{{article.title}}</span>
+  </nav>
+
+  <article class="article">
+    <header class="article-header">
+      <h1 class="article-title">{{article.title}}</h1>
+      <div class="article-meta">
+        <time datetime="{{article.created_at}}">{{date article.created_at}}</time>
+        {{#if article.updated_at}}
+          • 更新日: <time datetime="{{article.updated_at}}">{{date article.updated_at}}</time>
+        {{/if}}
+      </div>
+    </header>
+
+    <div class="article-body">
+      {{article.body}}
+    </div>
+
+    <footer class="article-footer">
+      <div class="article-vote">
+        <span class="article-vote-question">この記事は役に立ちましたか？</span>
+        <div class="article-vote-buttons">
+          <button class="article-vote-up" data-article-id="{{article.id}}">はい</button>
+          <button class="article-vote-down" data-article-id="{{article.id}}">いいえ</button>
+        </div>
+      </div>
+      
+      <div class="article-more-help">
+        <p>解決しない場合は</p>
+        <a href="{{settings.contact_url}}" class="button">お問い合わせ</a>
+      </div>
+    </footer>
+  </article>
+</div>

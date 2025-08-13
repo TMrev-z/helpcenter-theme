@@ -1,0 +1,18 @@
+{
+  "name": "zendesk-dark-hero-theme",
+  "version": "1.0.0",
+  "description": "Dark Hero Theme for Zendesk Guide",
+  "scripts": {
+    "dev": "zcli themes:preview",
+    "validate": "zcli themes:validate",
+    "preupload": "bash scripts/clean_macos_attrs.sh",
+    "upload:stg": "npm run preupload && zcli themes:import --brand 4897750468766",
+    "upload:prod": "npm run preupload && zcli themes:import --brand 4897750468766",
+    "build:zip": "npm run preupload && COPYFILE_DISABLE=1 zip -X -r theme.zip . -x '*.DS_Store' -x '__MACOSX/*' -x '.git/*' -x 'node_modules/*' -x '*.md'"
+  },
+  "devDependencies": {
+    "@zendesk/zcli": "latest"
+  },
+  "author": "Company Name",
+  "license": "MIT"
+}

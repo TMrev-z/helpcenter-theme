@@ -1,0 +1,15 @@
+{{> header}}
+<main class="container">
+  <div class="error-content">
+    <h1>{{t 'error'}}</h1>
+    <div class="error-message">
+      {{#if article}}
+        <p>{{t 'article_not_found'}}</p>
+      {{else}}
+        <p>{{t 'page_not_found'}}</p>
+      {{/if}}
+    </div>
+    <a href="{{help_center.url}}" class="btn-primary">{{t 'back_to_help_center'}}</a>
+  </div>
+</main>
+{{> footer}}

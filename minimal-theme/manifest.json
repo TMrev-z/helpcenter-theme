@@ -1,0 +1,101 @@
+{
+  "name": "Dark Hero Theme",
+  "author": "Company Name",
+  "version": "1.0.0",
+  "api_version": 2,
+  "default_locale": "ja",
+  "settings": [
+    {
+      "label": "テーマバージョン",
+      "variables": [
+        {
+          "identifier": "theme_version",
+          "type": "text",
+          "description": "テーマのバージョン番号",
+          "label": "テーマバージョン",
+          "value": "1.0.0"
+        }
+      ]
+    },
+    {
+      "label": "カラー設定",
+      "variables": [
+        {
+          "identifier": "accent_color",
+          "type": "color",
+          "description": "アクセントカラー",
+          "label": "アクセントカラー",
+          "value": "#6C63FF"
+        },
+        {
+          "identifier": "category_color_1",
+          "type": "color",
+          "description": "カテゴリカラー1（アカウント管理）",
+          "label": "カテゴリカラー1",
+          "value": "#6C63FF"
+        },
+        {
+          "identifier": "category_color_2",
+          "type": "color",
+          "description": "カテゴリカラー2（料金・お支払い）",
+          "label": "カテゴリカラー2",
+          "value": "#FF6B6B"
+        },
+        {
+          "identifier": "category_color_3",
+          "type": "color",
+          "description": "カテゴリカラー3（使い方ガイド）",
+          "label": "カテゴリカラー3",
+          "value": "#4ECDC4"
+        },
+        {
+          "identifier": "category_color_4",
+          "type": "color",
+          "description": "カテゴリカラー4（トラブルシューティング）",
+          "label": "カテゴリカラー4",
+          "value": "#FFD93D"
+        },
+        {
+          "identifier": "category_color_5",
+          "type": "color",
+          "description": "カテゴリカラー5（API・連携）",
+          "label": "カテゴリカラー5",
+          "value": "#95E1D3"
+        },
+        {
+          "identifier": "category_color_6",
+          "type": "color",
+          "description": "カテゴリカラー6（よくある質問）",
+          "label": "カテゴリカラー6",
+          "value": "#FF8CC8"
+        }
+      ]
+    },
+    {
+      "label": "コンテンツ設定",
+      "variables": [
+        {
+          "identifier": "popular_searches",
+          "type": "text",
+          "description": "人気の検索キーワード（カンマ区切り）",
+          "label": "人気の検索キーワード",
+          "value": "ログインできない,パスワードリセット,プラン変更方法,解約手続き,請求書を発行する,APIキー取得"
+        },
+        {
+          "identifier": "back_to_website_url",
+          "type": "text",
+          "description": "Webサイトへ戻るリンクURL",
+          "label": "Webサイトへ戻るリンク",
+          "value": "https://example.com"
+        },
+        {
+          "identifier": "contact_url",
+          "type": "text",
+          "description": "お問い合わせページのURL",
+          "label": "お問い合わせURL",
+          "value": "/hc/requests/new"
+        }
+      ]
+    }
+  ]
+}
