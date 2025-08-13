@@ -10,11 +10,106 @@
   <script src="{{asset 'script.js'}}"></script>
 </head>
 <body>
-<main class="container">
-  <h1>{{section.name}}</h1>
-  {{#if section.articles}}
-    <ul>{{#each section.articles}}<li><a href="{{url}}">{{title}}</a></li>{{/each}}</ul>
-  {{else}}<p>このセクションには記事がありません。</p>{{/if}}
+{{!-- ヘッダー --}}
+<header class="site-header">
+  <div class="container">
+    <nav class="header-nav">
+      <a href="/hc/ja" class="header-logo">{{help_center.name}}</a>
+      <div class="header-links">
+        <a href="/hc/ja">ホーム</a>
+        <a href="/hc/ja/categories">カテゴリ</a>
+        <a href="/hc/ja/requests/new">お問い合わせ</a>
+        <a href="/hc/ja/signin">ログイン</a>
+      </div>
+    </nav>
+  </div>
+</header>
+
+{{!-- パンくずナビゲーション --}}
+<div class="breadcrumb-section">
+  <div class="container">
+    <nav class="breadcrumb">
+      <a href="/hc/ja" class="breadcrumb-item">ヘルプセンター</a>
+      <span class="breadcrumb-separator">›</span>
+      <a href="{{section.category.url}}" class="breadcrumb-item">{{section.category.name}}</a>
+      <span class="breadcrumb-separator">›</span>
+      <span class="breadcrumb-current">{{section.name}}</span>
+    </nav>
+  </div>
+</div>
+
+{{!-- セクションヘッダー --}}
+<div class="section-header">
+  <div class="container">
+    <div class="section-header-content">
+      <h1 class="section-title">{{section.name}}</h1>
+      {{#if section.description}}
+        <p class="section-description">{{section.description}}</p>
+      {{/if}}
+      <div class="section-stats">
+        <span class="article-count">{{section.articles.length}} 件の記事</span>
+        {{#if section.created_at}}
+          <span class="section-updated">更新日: {{date section.updated_at timeago=true}}</span>
+        {{/if}}
+      </div>
+    </div>
+  </div>
+</div>
+
+{{!-- 記事一覧 --}}
+<main class="section-content">
+  <div class="container">
+    {{#if section.articles}}
+      <div class="articles-grid">
+        {{#each section.articles}}
+          <article class="article-card">
+            <div class="article-card-header">
+              {{#if label}}
+                <span class="article-label article-label--{{label}}">{{label}}</span>
+              {{/if}}
+              <h2 class="article-card-title">
+                <a href="{{url}}" class="article-card-link">{{title}}</a>
+              </h2>
+            </div>
+            
+            <div class="article-card-content">
+              {{#if snippet}}
+                <p class="article-card-excerpt">{{snippet}}</p>
+              {{/if}}
+            </div>
+            
+            <div class="article-card-footer">
+              <div class="article-card-meta">
+                {{#if created_at}}
+                  <time class="article-card-date">{{date created_at}}</time>
+                {{/if}}
+                {{#if vote_sum}}
+                  <div class="article-card-votes">
+                    👍 {{vote_sum}}
+                  </div>
+                {{/if}}
+              </div>
+              <a href="{{url}}" class="article-card-button">
+                記事を読む
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                  <path d="M6 3l5 5-5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </a>
+            </div>
+          </article>
+        {{/each}}
+      </div>
+    {{else}}
+      <div class="empty-state">
+        <div class="empty-state-icon">
+          📄
+        </div>
+        <h3 class="empty-state-title">記事がありません</h3>
+        <p class="empty-state-description">このセクションにはまだ記事が追加されていません。</p>
+        <a href="/hc/ja" class="btn btn-primary">ヘルプセンターに戻る</a>
+      </div>
+    {{/if}}
+  </div>
 </main>
 <footer class="footer">
   <div class="container">
