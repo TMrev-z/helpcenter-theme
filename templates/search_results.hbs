@@ -1,25 +1,9 @@
-{{!-- Search Results Page Template --}}
-<div class="search-results-container">
-  <header class="search-header">
-    <h1>検索結果: "{{query}}"</h1>
-    <p class="results-count">{{results_count}}件の結果が見つかりました</p>
-  </header>
-
-  <div class="search-results">
-    {{#each results}}
-      <article class="search-result-item">
-        <a href="{{url}}" class="result-link">
-          <h2 class="result-title">{{title}}</h2>
-          {{#if snippet}}
-            <p class="result-snippet">{{snippet}}</p>
-          {{/if}}
-        </a>
-      </article>
-    {{else}}
-      <div class="no-results">
-        <h2>該当する結果が見つかりませんでした</h2>
-        <p>別のキーワードで検索してみてください。</p>
-      </div>
-    {{/each}}
-  </div>
-</div>
+{{!-- templates/search_results.hbs --}}
+{{> header}}
+<main class="container">
+  <h1>検索結果</h1>
+  {{#if results}}
+    <ul>{{#each results}}<li><a href="{{url}}">{{title}}</a></li>{{/each}}</ul>
+  {{else}}<p>該当する結果は見つかりませんでした。</p>{{/if}}
+</main>
+{{> footer}}

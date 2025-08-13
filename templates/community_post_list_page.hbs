@@ -1,27 +1,7 @@
-{{!-- Community Post List Page Template --}}
-<div class="community-container">
-  <header class="community-header">
-    <h1>コミュニティ</h1>
-    <p class="community-description">ユーザー同士で情報を共有しましょう</p>
-  </header>
-
-  <div class="community-posts">
-    {{#each posts}}
-      <article class="community-post">
-        <a href="{{url}}" class="post-link">
-          <h2 class="post-title">{{title}}</h2>
-          {{#if author}}
-            <p class="post-author">投稿者: {{author.name}}</p>
-          {{/if}}
-          {{#if created_at}}
-            <time class="post-date">{{date created_at}}</time>
-          {{/if}}
-        </a>
-      </article>
-    {{else}}
-      <div class="no-posts">
-        <p>まだ投稿がありません。</p>
-      </div>
-    {{/each}}
-  </div>
-</div>
+{{!-- templates/community_post_list_page.hbs --}}
+{{> header}}
+<main class="container">
+  <h1>コミュニティ</h1>
+  <p>現在この機能は利用していません。</p>
+</main>
+{{> footer}}
