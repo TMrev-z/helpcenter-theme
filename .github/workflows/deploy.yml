@@ -151,9 +151,52 @@ jobs:
           echo "=== Templates directory ==="
           ls -la templates/ | head -10 || echo "Templates directory not found"
           
-          # ファイル内容の確認
+          # ファイル内容の詳細確認
           echo "=== File sizes ==="
           du -h assets/style.css assets/script.js manifest.json || true
+          
+          echo "=== Script.js file verification ==="
+          if [ -f assets/script.js ]; then
+            echo "✅ script.js exists"
+            echo "File size: $(wc -c < assets/script.js) bytes"
+            echo "Line count: $(wc -l < assets/script.js) lines"
+            echo "First 5 lines of script.js:"
+            head -5 assets/script.js || true
+            echo "File permissions: $(ls -la assets/script.js)"
+          else
+            echo "❌ script.js does not exist"
+            exit 1
+          fi
+          
+          echo "=== All files in assets directory ==="
+          ls -la assets/ || true
+          
+          echo "=== Checking file contents with xxd (hex dump) ==="
+          xxd assets/script.js | head -10 || true
+          
+          # ZCLI検証とテーマパッケージ作成テスト
+          echo "=== ZCLI theme validation ==="
+          zcli themes:validate . || echo "Validation failed but continuing..."
+          
+          echo "=== Testing theme package creation ==="
+          # テーマパッケージを手動で作成してみる
+          mkdir -p /tmp/theme-package-test
+          cd /tmp/theme-package-test
+          cp -r /tmp/clean-theme/* .
+          
+          echo "=== Contents before packaging ==="
+          find . -name "*.js" -o -name "*.css" -o -name "*.json" | sort
+          
+          echo "=== File verification in package test directory ==="
+          if [ -f assets/script.js ]; then
+            echo "✅ script.js found in package test"
+            file assets/script.js
+            cat assets/script.js | head -3
+          else
+            echo "❌ script.js missing in package test"
+          fi
+          
+          cd /tmp/clean-theme
           
           # テーマインポート実行（エラー時は処理を停止）
           echo "📥 Importing theme to Zendesk..."
