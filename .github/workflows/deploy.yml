@@ -50,7 +50,6 @@ jobs:
     runs-on: ubuntu-latest
     environment:
       name: ${{ github.event.inputs.environment }}
-      url: https://${{ secrets.ZENDESK_SUBDOMAIN }}.zendesk.com/hc
     concurrency:
       group: deploy-${{ github.event.inputs.environment }}
       cancel-in-progress: false
