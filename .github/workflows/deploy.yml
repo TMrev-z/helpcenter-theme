@@ -128,9 +128,14 @@ jobs:
           mkdir -p /tmp/clean-theme
           
           # 必要なファイルのみをコピー
-          cp -r assets/ /tmp/clean-theme/
+          mkdir -p /tmp/clean-theme/assets
+          cp assets/style.css /tmp/clean-theme/assets/
+          # script.jsは一時的に除外してテスト
+          # cp assets/script.js /tmp/clean-theme/assets/
           cp -r templates/ /tmp/clean-theme/
           cp manifest.json /tmp/clean-theme/
+          
+          echo "⚠️ TESTING: script.js temporarily excluded to isolate the issue"
           
           # クリーンディレクトリに移動
           cd /tmp/clean-theme
