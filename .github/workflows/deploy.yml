@@ -204,14 +204,36 @@ jobs:
           # シンプルなテーマインポート（ブランドIDなしで自動選択）
           echo "📥 Importing theme with automatic brand selection..."
           
-          # 標準的なimportコマンドを使用
+          # 利用可能なテーマコマンドを確認
+          echo "🔍 Available theme commands:"
+          zcli themes --help || zcli --help | grep -i theme || true
+          
+          # themes:createを試行（新しいテーマを作成）
+          echo "🆕 Trying themes:create first..."
           {
-            printf '\n' | zcli themes:import 2>&1
+            printf '\n' | zcli themes:create 2>&1
           } || {
-            printf '1\n' | zcli themes:import 2>&1
+            printf '1\n' | zcli themes:create 2>&1
           } || {
-            echo "Both automatic selection methods failed"
-            exit 1
+            echo "themes:create failed, trying themes:update..."
+            # themes:updateを試行してみる（ZCLIが提案したコマンド）
+            echo "🔄 Trying themes:update as suggested by ZCLI..."
+            {
+              printf '\n' | zcli themes:update 2>&1
+            } || {
+              printf '1\n' | zcli themes:update 2>&1
+            } || {
+              echo "themes:update also failed, trying themes:import..."
+              # フォールバックでthemes:importを試行
+              {
+                printf '\n' | zcli themes:import 2>&1
+              } || {
+                printf '1\n' | zcli themes:import 2>&1
+              } || {
+                echo "All theme commands failed"
+                exit 1
+              }
+            }
           }
           
           # 成功確認（エラーがなければ成功とみなす）
