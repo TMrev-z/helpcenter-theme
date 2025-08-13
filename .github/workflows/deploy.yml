@@ -125,7 +125,22 @@ jobs:
           
           # 基本的なテーマ構造確認
           echo "🔍 Checking theme structure:"
-          ls -la assets/ templates/ manifest.json 2>/dev/null || echo "Some theme files missing"
+          echo "=== Root directory ==="
+          ls -la . || true
+          echo "=== Assets directory ==="
+          ls -la assets/ || echo "Assets directory not found"
+          echo "=== Templates directory ==="
+          ls -la templates/ || echo "Templates directory not found"
+          echo "=== Manifest file ==="
+          ls -la manifest.json || echo "Manifest not found"
+          
+          # ファイル内容の確認
+          echo "=== File sizes ==="
+          du -h assets/script.js assets/style.css manifest.json || true
+          
+          # ファイル権限の確認
+          echo "=== File permissions ==="
+          stat assets/script.js || true
           
           # テーマインポート実行（エラー時は処理を停止）
           echo "📥 Importing theme to Zendesk..."
