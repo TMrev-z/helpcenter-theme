@@ -1,0 +1,75 @@
+{
+  "name": "Dark Hero Theme",
+  "author": "Company Name",
+  "version": "1.0.0",
+  "api_version": 2,
+  "default_locale": "ja",
+  "settings": [
+    {
+      "label": "テーマバージョン",
+      "id": "theme_version",
+      "type": "text",
+      "value": "1.0.0"
+    },
+    {
+      "label": "アクセントカラー",
+      "id": "accent_color",
+      "type": "color",
+      "value": "#6C63FF"
+    },
+    {
+      "label": "カテゴリカラー1（アカウント管理）",
+      "id": "category_color_1",
+      "type": "color",
+      "value": "#6C63FF"
+    },
+    {
+      "label": "カテゴリカラー2（料金・お支払い）",
+      "id": "category_color_2",
+      "type": "color",
+      "value": "#FF6B6B"
+    },
+    {
+      "label": "カテゴリカラー3（使い方ガイド）",
+      "id": "category_color_3",
+      "type": "color",
+      "value": "#4ECDC4"
+    },
+    {
+      "label": "カテゴリカラー4（トラブルシューティング）",
+      "id": "category_color_4",
+      "type": "color",
+      "value": "#FFD93D"
+    },
+    {
+      "label": "カテゴリカラー5（API・連携）",
+      "id": "category_color_5",
+      "type": "color",
+      "value": "#95E1D3"
+    },
+    {
+      "label": "カテゴリカラー6（よくある質問）",
+      "id": "category_color_6",
+      "type": "color",
+      "value": "#FF8CC8"
+    },
+    {
+      "label": "人気の検索キーワード（カンマ区切り）",
+      "id": "popular_searches",
+      "type": "text",
+      "value": "ログインできない,パスワードリセット,プラン変更方法,解約手続き,請求書を発行する,APIキー取得"
+    },
+    {
+      "label": "Webサイトへ戻るリンク",
+      "id": "back_to_website_url",
+      "type": "text",
+      "value": "https://example.com"
+    },
+    {
+      "label": "お問い合わせURL",
+      "id": "contact_url",
+      "type": "text",
+      "value": "/hc/requests/new"
+    }
+  ]
+}

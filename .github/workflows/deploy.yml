@@ -1,0 +1,117 @@
+name: Deploy Help Center Theme
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main, develop ]
+
+env:
+  NODE_VERSION: '20'
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+      
+      - name: Install Zendesk CLI
+        run: |
+          npm install -g @zendesk/zcli
+          zcli version
+      
+      - name: Validate theme structure
+        run: |
+          # ファイル存在チェック
+          test -f assets/style.css || exit 1
+          test -f assets/script.js || exit 1
+          test -f manifest.json || exit 1
+          
+          # Zendesk バリデーション
+          zcli themes:validate
+      
+      - name: Check accessibility (axe-core)
+        run: |
+          npm install -g @axe-core/cli
+          # 後日実装: axe <preview-url>
+
+  deploy:
+    needs: validate
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    environment: 
+      name: production
+      url: https://${{ secrets.ZENDESK_SUBDOMAIN }}.zendesk.com/hc
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+      
+      - name: Install Zendesk CLI
+        run: npm install -g @zendesk/zcli
+      
+      - name: Configure Zendesk CLI
+        env:
+          ZENDESK_SUBDOMAIN: ${{ secrets.ZENDESK_SUBDOMAIN }}
+          ZENDESK_EMAIL: ${{ secrets.ZENDESK_EMAIL }}
+          ZENDESK_API_TOKEN: ${{ secrets.ZENDESK_API_TOKEN }}
+        run: |
+          zcli login \
+            --subdomain "$ZENDESK_SUBDOMAIN" \
+            --email "$ZENDESK_EMAIL" \
+            --token "$ZENDESK_API_TOKEN"
+      
+      - name: Backup current theme
+        env:
+          BRAND_ID: ${{ secrets.ZENDESK_BRAND_ID }}
+          THEME_ID: ${{ secrets.ZENDESK_THEME_ID }}
+        run: |
+          mkdir -p backups
+          zcli themes:pull \
+            --brand "$BRAND_ID" \
+            --theme "$THEME_ID" \
+            --path backups/theme-$(date +%Y%m%d-%H%M%S)
+      
+      - name: Upload theme to Zendesk
+        env:
+          BRAND_ID: ${{ secrets.ZENDESK_BRAND_ID }}
+          THEME_ID: ${{ secrets.ZENDESK_THEME_ID }}
+        run: |
+          zcli themes:upload \
+            --brand "$BRAND_ID" \
+            --theme "$THEME_ID" \
+            --version-bump patch
+      
+      - name: Create deployment record
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const deployment = await github.rest.repos.createDeployment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              ref: context.ref,
+              environment: 'production',
+              description: 'Zendesk Help Center Theme deployment',
+              auto_merge: false,
+              required_contexts: []
+            });
+            
+            await github.rest.repos.createDeploymentStatus({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              deployment_id: deployment.data.id,
+              state: 'success',
+              environment_url: `https://${{ secrets.ZENDESK_SUBDOMAIN }}.zendesk.com/hc`,
+              description: 'Theme deployed successfully'
+            });
