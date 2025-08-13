@@ -1,7 +1,31 @@
-{{> document_head}}
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>コミュニティトピック詳細 - {{help_center.name}}</title>
+  <style>:root { --bg-dark: #1a1a2e; --bg-body: #121218; --text-primary: #FFFFFF; --text-secondary: #B8BCC8; --accent: {{settings.accent_color}}; }</style>
+  <link rel="stylesheet" href="{{asset 'style.css'}}">
+  <script src="{{asset 'script.js'}}"></script>
+</head>
 <body>
 <main class="container">
   <h1>コミュニティトピック詳細</h1>
   <p>現在この機能は利用していません。</p>
 </main>
-{{> document_footer}}
+<footer class="footer">
+  <div class="container">
+    <div class="footer-content">
+      <div class="footer-links">
+        <a href="/hc/ja">ヘルプセンター</a>
+        <a href="{{settings.back_to_website_url}}">Webサイト</a>
+        <a href="/hc/ja/signin">ログイン</a>
+      </div>
+      <div class="footer-copyright">
+        © 2025 {{help_center.name}}. All rights reserved.
+      </div>
+    </div>
+  </div>
+</footer>
+</body>
+</html>
