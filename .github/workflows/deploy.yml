@@ -63,9 +63,7 @@ jobs:
     needs: validate
     if: (github.ref == 'refs/heads/main' && github.event_name == 'push') || (github.event_name == 'workflow_dispatch' && inputs.confirm == true)
     runs-on: ubuntu-latest
-    environment: 
-      name: ${{ github.event.inputs.environment || 'production' }}
-      url: https://${{ secrets.ZENDESK_SUBDOMAIN }}.zendesk.com/hc
+    environment: ${{ github.event.inputs.environment || 'production' }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
