@@ -1,0 +1,32 @@
+{{!-- Request Page Template --}}
+<div class="request-container">
+  <article class="request-detail">
+    <header class="request-header">
+      <h1>{{request.subject}}</h1>
+      <div class="request-meta">
+        <span class="request-id">#{{request.id}}</span>
+        <span class="request-status status-{{request.status}}">{{request.status}}</span>
+        <time class="request-date">{{date request.created_at}}</time>
+      </div>
+    </header>
+
+    <div class="request-content">
+      {{#if request.description}}
+        <div class="request-description">{{request.description}}</div>
+      {{/if}}
+    </div>
+
+    {{#if comments}}
+      <section class="comments-section">
+        <h2>やり取り</h2>
+        {{#each comments}}
+          <div class="comment">
+            <div class="comment-author">{{author.name}}</div>
+            <div class="comment-content">{{body}}</div>
+            <time class="comment-date">{{date created_at}}</time>
+          </div>
+        {{/each}}
+      </section>
+    {{/if}}
+  </article>
+</div>
