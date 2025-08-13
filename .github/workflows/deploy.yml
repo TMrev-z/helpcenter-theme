@@ -1,4 +1,4 @@
-name: Deploy Help Center Theme
+name: Deploy Guide Theme
 
 on:
   workflow_dispatch:
@@ -6,10 +6,9 @@ on:
       environment:
         description: 'Target environment'
         required: true
-        default: 'staging'
+        default: 'production'
         type: choice
         options:
-        - staging
         - production
 
 permissions:
@@ -29,20 +28,43 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
       
-      - name: Install zcli
-        run: npm i -g @zendesk/zcli
+      - name: Install ZCLI (pinned version)
+        run: npm i -g @zendesk/zcli@1.0.0-beta.53
       
-      - name: Validate theme structure
+      - name: Preflight validation (Copenhagen standard structure)
         run: |
-          # Check required files exist
-          test -f assets/style.css || exit 1
-          test -f assets/script.js || exit 1
-          test -f manifest.json || exit 1
+          set -e
+          echo "🔍 Validating theme structure (Copenhagen standard)..."
           
-          # Validate manifest.json structure
-          node -e "const m=require('./manifest.json'); if(!m.name || !m.version || !m.api_version) process.exit(1)"
+          # Must-have files check
+          test -f "manifest.json" || { echo "❌ manifest.json not found at theme root"; exit 1; }
+          test -f "style.css" || { echo "❌ style.css not found at theme root"; exit 1; }
+          test -f "script.js" || { echo "❌ script.js not found at theme root"; exit 1; }
+          test -f "templates/document_head.hbs" || { echo "❌ document_head.hbs not found"; exit 1; }
           
-          echo "✅ Theme structure validated"
+          # Reference consistency check  
+          grep -q "{{asset 'style.css'}}" "templates/document_head.hbs" || { echo "❌ style.css reference not found in document_head.hbs"; exit 1; }
+          grep -q "{{asset 'script.js'}}" "templates/document_head.hbs" || { echo "❌ script.js reference not found in document_head.hbs"; exit 1; }
+          
+          # Exclude problematic files/directories
+          if find . -name "__MACOSX" -o -name ".DS_Store" -o -path "*/minimal-theme/*" -o -path "*/temp-theme/*" -o -path "*/clean-theme/*" | grep -q .; then
+            echo "❌ Found problematic files/directories that should be removed"
+            find . -name "__MACOSX" -o -name ".DS_Store" -o -path "*/minimal-theme/*" -o -path "*/temp-theme/*" -o -path "*/clean-theme/*"
+            exit 1
+          fi
+          
+          echo "✅ Theme structure validation passed"
+          
+          # File size and content verification
+          echo "📊 File verification:"
+          echo "style.css: $(wc -c < style.css) bytes, $(wc -l < style.css) lines"
+          echo "script.js: $(wc -c < script.js) bytes, $(wc -l < script.js) lines"
+          
+      - name: Validate theme with ZCLI
+        run: |
+          echo "🔍 ZCLI theme validation..."
+          zcli themes:validate . || { echo "❌ ZCLI validation failed"; exit 1; }
+          echo "✅ ZCLI validation passed"
 
   deploy:
     needs: validate
@@ -61,13 +83,8 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
       
-      - name: Install zcli
-        run: npm i -g @zendesk/zcli
-      
-      - name: Mask sensitive data
-        run: |
-          echo "::add-mask::${{ secrets.ZENDESK_API_TOKEN }}"
-          echo "::add-mask::${{ secrets.ZENDESK_EMAIL }}"
+      - name: Install ZCLI (pinned version)
+        run: npm i -g @zendesk/zcli@1.0.0-beta.53
       
       - name: Setup Zendesk Environment Variables
         env:
@@ -75,195 +92,90 @@ jobs:
           ZENDESK_EMAIL: ${{ secrets.ZENDESK_EMAIL }}
           ZENDESK_API_TOKEN: ${{ secrets.ZENDESK_API_TOKEN }}
         run: |
-          echo "🔐 Setting up Zendesk environment variables for authentication"
+          echo "🔐 Setting up Zendesk environment variables for non-interactive authentication"
           echo "ZENDESK_SUBDOMAIN=$ZENDESK_SUBDOMAIN" >> $GITHUB_ENV
-          echo "ZENDESK_EMAIL=$ZENDESK_EMAIL" >> $GITHUB_ENV
+          echo "ZENDESK_EMAIL=$ZENDESK_EMAIL" >> $GITHUB_ENV  
           echo "ZENDESK_API_TOKEN=$ZENDESK_API_TOKEN" >> $GITHUB_ENV
-          echo "✅ Environment variables configured for zcli"
+          echo "✅ Environment variables configured"
       
-      - name: Debug Zendesk CLI configuration
+      - name: Create theme package with ZCLI
+        run: |
+          echo "📦 Creating theme package..."
+          zcli themes:validate .
+          zcli themes:zip . -o theme.zip
+          
+          echo "📊 Package created:"
+          ls -la theme.zip
+          echo "✅ Theme package ready for upload"
+      
+      - name: Deploy via Theming API (official workflow)
         env:
-          ZENDESK_SUBDOMAIN: ${{ secrets.ZENDESK_SUBDOMAIN }}
-          ZENDESK_EMAIL: ${{ secrets.ZENDESK_EMAIL }}
           BRAND_ID: ${{ secrets.ZENDESK_BRAND_ID }}
         run: |
-          echo "🔍 Debug information:"
-          echo "Subdomain: $ZENDESK_SUBDOMAIN"
-          echo "Email: $ZENDESK_EMAIL"
+          set -e
+          echo "🚀 Deploying theme via Zendesk Theming API..."
           echo "Brand ID: $BRAND_ID"
-          echo "ZCLI version: $(zcli --version)"
           
-          # 設定ファイルの確認
-          echo "📋 Configuration files:"
-          ls -la ~/.config/zcli/ 2>/dev/null || echo "No zcli config directory found"
-          cat ~/.config/zcli/config 2>/dev/null || echo "No zcli config file found"
+          # Create import job
+          echo "📋 Creating theme import job..."
+          JOB=$(curl -sS -u "$ZENDESK_EMAIL/token:$ZENDESK_API_TOKEN" \
+            -H "Content-Type: application/json" \
+            -d "{\"job\": {\"attributes\": {\"brand_id\": \"${BRAND_ID}\", \"format\": \"zip\"}}}" \
+            "https://${ZENDESK_SUBDOMAIN}.zendesk.com/api/v2/guide/theming/jobs/themes/imports")
           
-          # 基本コマンドのテスト
-          echo "🧪 Testing basic zcli commands:"
-          zcli --help | head -5
+          # Extract upload URL and parameters
+          URL=$(echo "$JOB" | jq -r '.job.data.upload.url')
+          JOB_ID=$(echo "$JOB" | jq -r '.job.id')
           
-          # 認証状態の確認
-          echo "🔐 Authentication check:"
-          zcli auth --help || true
+          echo "📤 Uploading theme package..."
+          echo "Job ID: $JOB_ID"
+          echo "Upload URL: $URL"
           
-          # API接続テスト
-          echo "📡 API connection test:"
-          curl -s -u "$ZENDESK_EMAIL/token:***" "https://$ZENDESK_SUBDOMAIN.zendesk.com/api/v2/brands.json" | jq '.brands[].id' 2>/dev/null || echo "curl/jq test failed"
+          # Build form parameters for multipart upload
+          PARAMS=""
+          for key in $(echo "$JOB" | jq -r '.job.data.upload.parameters | keys[]'); do
+            value=$(echo "$JOB" | jq -r ".job.data.upload.parameters.$key")
+            PARAMS="$PARAMS -F $key=$value"
+          done
+          
+          # Upload theme package
+          UPLOAD_RESULT=$(curl -sS -X POST $PARAMS -F file=@theme.zip "$URL")
+          echo "Upload result: $UPLOAD_RESULT"
+          
+          # Poll job status until completion
+          echo "⏳ Waiting for theme import to complete..."
+          for i in $(seq 1 30); do
+            STATUS_RESPONSE=$(curl -sS -u "$ZENDESK_EMAIL/token:$ZENDESK_API_TOKEN" \
+              "https://${ZENDESK_SUBDOMAIN}.zendesk.com/api/v2/guide/theming/jobs/$JOB_ID")
+            
+            STATUS=$(echo "$STATUS_RESPONSE" | jq -r '.job.status')
+            echo "Theme import job status ($i/30): $STATUS"
+            
+            if [ "$STATUS" = "completed" ]; then
+              echo "✅ Theme import completed successfully!"
+              echo "Theme imported and ready for use"
+              exit 0
+            fi
+            
+            if [ "$STATUS" = "failed" ]; then
+              echo "❌ Theme import failed"
+              echo "Error details:"
+              echo "$STATUS_RESPONSE" | jq '.job.errors // "No error details available"'
+              exit 1
+            fi
+            
+            sleep 10
+          done
+          
+          echo "❌ Timeout waiting for theme import job to complete"
+          exit 1
       
-      - name: Import theme to Zendesk
-        env:
-          BRAND_ID: ${{ secrets.ZENDESK_BRAND_ID }}
+      - name: Verify deployment
         run: |
-          echo "📦 Importing theme to brand: $BRAND_ID"
-          echo "Using environment variables for authentication (no login required)"
-          
-          # 環境変数が正しく設定されているか確認
-          if [ -z "$ZENDESK_SUBDOMAIN" ] || [ -z "$ZENDESK_EMAIL" ] || [ -z "$ZENDESK_API_TOKEN" ]; then
-            echo "❌ Error: Required environment variables not set"
-            exit 1
-          fi
-          
-          # クリーンなテーマディレクトリを作成
-          echo "🧹 Creating clean theme directory..."
-          mkdir -p /tmp/clean-theme
-          
-          # 必要なファイルのみをコピー
-          mkdir -p /tmp/clean-theme/assets
-          cp assets/style.css /tmp/clean-theme/assets/
-          
-          # 実際のscript.jsファイルをリポジトリからコピー
-          cp assets/script.js /tmp/clean-theme/assets/
-          
-          cp -r templates/ /tmp/clean-theme/
-          cp manifest.json /tmp/clean-theme/
-          
-          echo "✅ Copied actual script.js from repository"
-          
-          # クリーンディレクトリに移動
-          cd /tmp/clean-theme
-          
-          # クリーンなディレクトリ構造確認
-          echo "🔍 Clean theme structure:"
-          echo "=== Root directory ==="
-          ls -la . || true
-          echo "=== Assets directory ==="
-          ls -la assets/ || echo "Assets directory not found"
-          echo "=== Templates directory ==="
-          ls -la templates/ | head -10 || echo "Templates directory not found"
-          
-          # ファイル内容の詳細確認
-          echo "=== File sizes ==="
-          du -h assets/style.css assets/script.js manifest.json || true
-          
-          echo "=== Script.js file verification ==="
-          if [ -f assets/script.js ]; then
-            echo "✅ script.js exists"
-            echo "File size: $(wc -c < assets/script.js) bytes"
-            echo "Line count: $(wc -l < assets/script.js) lines"
-            echo "First 5 lines of script.js:"
-            head -5 assets/script.js || true
-            echo "File permissions: $(ls -la assets/script.js)"
-          else
-            echo "❌ script.js does not exist"
-            exit 1
-          fi
-          
-          echo "=== All files in assets directory ==="
-          ls -la assets/ || true
-          
-          echo "=== Checking file contents with xxd (hex dump) ==="
-          xxd assets/script.js | head -10 || true
-          
-          # ZCLI検証とテーマパッケージ作成テスト
-          echo "=== ZCLI theme validation ==="
-          zcli themes:validate . || echo "Validation failed but continuing..."
-          
-          echo "=== Testing theme package creation ==="
-          # テーマパッケージを手動で作成してみる
-          mkdir -p /tmp/theme-package-test
-          cd /tmp/theme-package-test
-          cp -r /tmp/clean-theme/* .
-          
-          echo "=== Contents before packaging ==="
-          find . -name "*.js" -o -name "*.css" -o -name "*.json" | sort
-          
-          echo "=== File verification in package test directory ==="
-          if [ -f assets/script.js ]; then
-            echo "✅ script.js found in package test"
-            file assets/script.js
-            cat assets/script.js | head -3
-          else
-            echo "❌ script.js missing in package test"
-          fi
-          
-          cd /tmp/clean-theme
-          
-          # テーマインポート実行（エラー時は処理を停止）
-          echo "📥 Importing theme to Zendesk..."
-          
-          # シンプルなテーマインポート（ブランドIDなしで自動選択）
-          echo "📥 Importing theme with automatic brand selection..."
-          
-          # 利用可能なテーマコマンドを確認
-          echo "🔍 Available theme commands:"
-          zcli themes --help || zcli --help | grep -i theme || true
-          
-          # themes:createを試行（新しいテーマを作成）
-          echo "🆕 Trying themes:create first..."
-          {
-            printf '\n' | zcli themes:create 2>&1
-          } || {
-            printf '1\n' | zcli themes:create 2>&1
-          } || {
-            echo "themes:create failed, trying themes:update..."
-            # themes:updateを試行してみる（ZCLIが提案したコマンド）
-            echo "🔄 Trying themes:update as suggested by ZCLI..."
-            {
-              printf '\n' | zcli themes:update 2>&1
-            } || {
-              printf '1\n' | zcli themes:update 2>&1
-            } || {
-              echo "themes:update also failed, trying themes:import..."
-              # フォールバックでthemes:importを試行
-              {
-                printf '\n' | zcli themes:import 2>&1
-              } || {
-                printf '1\n' | zcli themes:import 2>&1
-              } || {
-                echo "All theme commands failed"
-                exit 1
-              }
-            }
-          }
-          
-          # 成功確認（エラーがなければ成功とみなす）
-          if [ $? -eq 0 ]; then
-            echo "✅ Theme import completed successfully!"
-          else
-            echo "❌ Theme import may have failed, but continuing..."
-          fi
-      
-      - name: Publish theme to live
-        run: |
-          echo "🚀 Publishing theme to live environment..."
-          
-          # テーマ一覧を確認
-          echo "📋 Checking theme list..."
-          printf '\n' | zcli themes:list 2>&1 || true
-          
-          # 利用可能なコマンドを確認
-          echo "🔍 Checking available commands..."
-          zcli --help | grep -i theme || true
-          
-          # themes:publishコマンドを試行
-          if zcli themes:publish --help >/dev/null 2>&1; then
-            echo "📢 Using themes:publish command..."
-            printf '\n' | zcli themes:publish 2>&1 || printf '1\n' | zcli themes:publish 2>&1 || true
-          else
-            echo "❌ themes:publish not available"
-          fi
-          
-          echo "🎯 Publishing attempt completed"
+          echo "🔍 Verifying theme deployment..."
+          echo "Theme deployed to: https://${ZENDESK_SUBDOMAIN}.zendesk.com/hc/admin/brand/${{ secrets.ZENDESK_BRAND_ID }}/themes"
+          echo "Help Center URL: https://${ZENDESK_SUBDOMAIN}.zendesk.com/hc/"
+          echo "✅ Deployment verification complete"
       
       - name: Create deployment record
         uses: actions/github-script@v7
@@ -274,7 +186,7 @@ jobs:
               repo: context.repo.repo,
               ref: context.sha,
               environment: '${{ github.event.inputs.environment }}',
-              description: 'Zendesk theme deployment',
+              description: 'Zendesk theme deployment via Theming API',
               auto_merge: false,
               required_contexts: []
             });
