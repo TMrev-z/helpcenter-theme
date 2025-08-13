@@ -4,10 +4,6 @@
   "version": "1.0.0",
   "api_version": 2,
   "default_locale": "ja",
-  "assets": [
-    "style.css",
-    "script.js"
-  ],
   "settings": [
     {
       "label": "テーマバージョン",
