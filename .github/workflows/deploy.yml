@@ -123,24 +123,30 @@ jobs:
             exit 1
           fi
           
-          # 基本的なテーマ構造確認
-          echo "🔍 Checking theme structure:"
+          # クリーンなテーマディレクトリを作成
+          echo "🧹 Creating clean theme directory..."
+          mkdir -p /tmp/clean-theme
+          
+          # 必要なファイルのみをコピー
+          cp -r assets/ /tmp/clean-theme/
+          cp -r templates/ /tmp/clean-theme/
+          cp manifest.json /tmp/clean-theme/
+          
+          # クリーンディレクトリに移動
+          cd /tmp/clean-theme
+          
+          # クリーンなディレクトリ構造確認
+          echo "🔍 Clean theme structure:"
           echo "=== Root directory ==="
           ls -la . || true
           echo "=== Assets directory ==="
           ls -la assets/ || echo "Assets directory not found"
           echo "=== Templates directory ==="
-          ls -la templates/ || echo "Templates directory not found"
-          echo "=== Manifest file ==="
-          ls -la manifest.json || echo "Manifest not found"
+          ls -la templates/ | head -10 || echo "Templates directory not found"
           
           # ファイル内容の確認
           echo "=== File sizes ==="
           du -h assets/script.js assets/style.css manifest.json || true
-          
-          # ファイル権限の確認
-          echo "=== File permissions ==="
-          stat assets/script.js || true
           
           # テーマインポート実行（エラー時は処理を停止）
           echo "📥 Importing theme to Zendesk..."
