@@ -36,7 +36,7 @@ jobs:
         run: |
           # Check required files exist
           test -f assets/style.css || exit 1
-          # test -f assets/script.js || exit 1  # temporarily disabled for testing
+          test -f assets/script.js || exit 1
           test -f manifest.json || exit 1
           
           # Validate manifest.json structure
@@ -131,14 +131,13 @@ jobs:
           mkdir -p /tmp/clean-theme/assets
           cp assets/style.css /tmp/clean-theme/assets/
           
-          # 最小限の空のscript.jsを作成してZendesk依存関係を満たす
-          echo "// Minimal script.js to satisfy Zendesk theme requirements" > /tmp/clean-theme/assets/script.js
-          echo "console.log('Dark Hero Theme loaded');" >> /tmp/clean-theme/assets/script.js
+          # 実際のscript.jsファイルをリポジトリからコピー
+          cp assets/script.js /tmp/clean-theme/assets/
           
           cp -r templates/ /tmp/clean-theme/
           cp manifest.json /tmp/clean-theme/
           
-          echo "✅ Created minimal script.js to satisfy Zendesk requirements"
+          echo "✅ Copied actual script.js from repository"
           
           # クリーンディレクトリに移動
           cd /tmp/clean-theme
@@ -154,8 +153,7 @@ jobs:
           
           # ファイル内容の確認
           echo "=== File sizes ==="
-          du -h assets/style.css manifest.json || true
-          # du -h assets/script.js temporarily disabled
+          du -h assets/style.css assets/script.js manifest.json || true
           
           # テーマインポート実行（エラー時は処理を停止）
           echo "📥 Importing theme to Zendesk..."
