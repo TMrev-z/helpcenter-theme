@@ -84,8 +84,12 @@ jobs:
         env:
           BRAND_ID: ${{ secrets.ZENDESK_BRAND_ID }}
         run: |
-          echo "📦 Importing theme to brand $BRAND_ID..."
-          zcli themes:import --brand "$BRAND_ID"
+          echo "📦 Importing theme to brand: $BRAND_ID"
+          # まずブランド一覧を確認
+          zcli themes:list || true
+          # ブランドIDを指定してインポート
+          echo "Importing to brand ID: $BRAND_ID"
+          zcli themes:import --brand $BRAND_ID
           echo "✅ Theme imported successfully"
       
       - name: Create deployment record
