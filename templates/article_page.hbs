@@ -1,40 +1,475 @@
-<div class="container">
-  <nav class="breadcrumbs">
-    <a href="{{help_center.url}}">{{help_center.name}}</a>
-    <span class="breadcrumb-separator">›</span>
-    <a href="{{section.url}}">{{section.name}}</a>
-    <span class="breadcrumb-separator">›</span>
-    <span>{{article.title}}</span>
+{{!-- 記事ページ --}}
+<main id="main-content" class="article-page" role="main">
+  
+  {{!-- パンくずナビゲーション --}}
+  <nav class="breadcrumb" aria-label="パンくず">
+    <div class="container">
+      <ol class="breadcrumb-list" role="list">
+        <li class="breadcrumb-item">
+          <a href="{{help_center.url}}">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+              <path d="M6.5 14.5v-3.505c0-.245.25-.495.5-.495h2c.25 0 .5.25.5.5v3.5a.5.5 0 00.5.5h4a.5.5 0 00.5-.5v-7a.5.5 0 00-.146-.354L13 5.793V2.5a.5.5 0 00-.5-.5h-1a.5.5 0 00-.5.5v1.293L8.354 1.146a.5.5 0 00-.708 0l-7 7A.5.5 0 001 8.5v7a.5.5 0 00.5.5h4a.5.5 0 00.5-.5z" fill="currentColor"/>
+            </svg>
+            ホーム
+          </a>
+        </li>
+        <li class="breadcrumb-separator" aria-hidden="true">›</li>
+        <li class="breadcrumb-item">
+          <a href="{{section.category.url}}">{{section.category.name}}</a>
+        </li>
+        <li class="breadcrumb-separator" aria-hidden="true">›</li>
+        <li class="breadcrumb-item">
+          <a href="{{section.url}}">{{section.name}}</a>
+        </li>
+        <li class="breadcrumb-separator" aria-hidden="true">›</li>
+        <li class="breadcrumb-item breadcrumb-current" aria-current="page">
+          {{article.title}}
+        </li>
+      </ol>
+    </div>
   </nav>
 
-  <article class="article">
-    <header class="article-header">
-      <h1 class="article-title">{{article.title}}</h1>
-      <div class="article-meta">
-        <time datetime="{{article.created_at}}">{{date article.created_at}}</time>
-        {{#if article.updated_at}}
-          • 更新日: <time datetime="{{article.updated_at}}">{{date article.updated_at}}</time>
-        {{/if}}
-      </div>
-    </header>
-
-    <div class="article-body article-content">
-      {{article.body}}
-    </div>
-
-    <footer class="article-footer">
-      <div class="article-vote">
-        <span class="article-vote-question">この記事は役に立ちましたか？</span>
-        <div class="article-vote-buttons">
-          <button class="article-vote-up" data-article-id="{{article.id}}">はい</button>
-          <button class="article-vote-down" data-article-id="{{article.id}}">いいえ</button>
+  {{!-- 記事ヘッダー --}}
+  <header class="article-header" aria-labelledby="article-title">
+    <div class="container">
+      <div class="article-header-content">
+        {{!-- バッジ表示 --}}
+        <div class="article-badges">
+          {{#if (is_recent article.created_at ../settings.new_badge_days)}}
+            <span class="badge badge--new">NEW</span>
+          {{else if (is_recent article.updated_at 90)}}
+            <span class="badge badge--updated">更新</span>
+          {{/if}}
+          
+          {{#if article.promoted}}
+            <span class="badge badge--promoted">おすすめ</span>
+          {{/if}}
+        </div>
+        
+        <h1 id="article-title" class="article-title">{{article.title}}</h1>
+        
+        {{!-- 記事メタ情報 --}}
+        <div class="article-meta">
+          <div class="meta-group">
+            <time datetime="{{article.created_at}}" class="meta-date">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                <circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="2"/>
+                <path d="M8 4v4l3 3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              </svg>
+              作成: {{date article.created_at format="medium"}}
+            </time>
+            
+            {{#unless (eq article.created_at article.updated_at)}}
+            <time datetime="{{article.updated_at}}" class="meta-date meta-updated">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                <path d="M3 8V6a5 5 0 0110 0v2M6 8v2a2 2 0 104 0V8" stroke="currentColor" stroke-width="2"/>
+              </svg>
+              更新: {{date article.updated_at timeago=true}}
+            </time>
+            {{/unless}}
+          </div>
+          
+          {{!-- 推定読了時間 --}}
+          <div class="reading-time">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+              <path d="M2 6s1.5-2 6-2 6 2 6 2v6s-1.5 2-6 2-6-2-6-2V6z" stroke="currentColor" stroke-width="2"/>
+              <path d="M6 8h4M6 10h2" stroke="currentColor" stroke-width="1" stroke-linecap="round"/>
+            </svg>
+            <span>約 {{reading_time article.body}} 分</span>
+          </div>
+          
+          {{!-- セクション情報 --}}
+          <div class="article-section">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+              <rect x="2" y="3" width="12" height="10" rx="2" stroke="currentColor" stroke-width="2"/>
+              <path d="M6 7h4M6 9h2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+            <a href="{{section.url}}" class="section-link">{{section.name}}</a>
+          </div>
         </div>
       </div>
-      
-      <div class="article-more-help">
-        <p>解決しない場合は</p>
-        <a href="{{settings.contact_url}}" class="button">お問い合わせ</a>
+    </div>
+  </header>
+
+  {{!-- 記事コンテンツレイアウト --}}
+  <div class="article-layout">
+    <div class="container">
+      <div class="article-grid">
+        
+        {{!-- メインコンテンツ --}}
+        <article class="article-content" aria-labelledby="article-title">
+          {{!-- 目次（設定でONの場合） --}}
+          {{#if settings.show_toc}}
+          <aside class="toc" aria-labelledby="toc-title">
+            <div class="toc-header">
+              <h2 id="toc-title" class="toc-title">目次</h2>
+              <button type="button" class="toc-toggle" aria-expanded="true" aria-controls="toc-list">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                  <path d="M4 6l4 4 4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </button>
+            </div>
+            <nav id="toc-list" class="toc-list" role="navigation" aria-label="目次"></nav>
+          </aside>
+          {{/if}}
+          
+          {{!-- 記事本文 --}}
+          <div class="article-body" id="article-body">
+            {{{article.body}}}
+          </div>
+          
+          {{!-- 記事の評価・アクション --}}
+          <footer class="article-actions">
+            {{!-- 記事評価 --}}
+            <div class="article-feedback" role="group" aria-labelledby="feedback-title">
+              <h3 id="feedback-title" class="feedback-title">この記事は役に立ちましたか？</h3>
+              <div class="feedback-buttons">
+                <button type="button" class="feedback-btn feedback-btn--positive" data-article-id="{{article.id}}" data-vote="up">
+                  <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                    <path d="M14 9V5a3 3 0 00-3-3l-4 9v8h12l2-7H14z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+                  </svg>
+                  はい
+                </button>
+                <button type="button" class="feedback-btn feedback-btn--negative" data-article-id="{{article.id}}" data-vote="down">
+                  <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                    <path d="M6 11V15a3 3 0 003 3l4-9V1H1l-2 7h6z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+                  </svg>
+                  いいえ
+                </button>
+              </div>
+            </div>
+            
+            {{!-- 解決しない場合のCTA --}}
+            {{#if settings.show_contact_cta}}
+            <div class="article-support">
+              <div class="support-content">
+                <h3 class="support-title">解決しない場合は</h3>
+                <p class="support-description">
+                  この記事で問題が解決しない場合は、サポートチームまでお気軽にお問い合わせください。
+                </p>
+                <div class="support-actions">
+                  <a href="{{settings.contact_url}}" class="btn btn-primary">
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                      <path d="M2 5a2 2 0 012-2h12a2 2 0 012 2v10a2 2 0 01-2 2H4a2 2 0 01-2-2V5z" stroke="currentColor" stroke-width="2"/>
+                      <path d="M2 5l8 5 8-5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
+                    お問い合わせ
+                  </a>
+                  {{#if help_center.community_enabled}}
+                  <a href="{{help_center.community_url}}" class="btn btn-secondary">
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                      <path d="M17 10c0 1-3 5-7 5s-7-4-7-5 3-5 7-5 7 4 7 5z" stroke="currentColor" stroke-width="2"/>
+                      <circle cx="10" cy="10" r="3" stroke="currentColor" stroke-width="2"/>
+                    </svg>
+                    コミュニティで質問
+                  </a>
+                  {{/if}}
+                </div>
+              </div>
+            </div>
+            {{/if}}
+          </footer>
+        </article>
+        
+        {{!-- サイドバー --}}
+        <aside class="article-sidebar" aria-label="関連情報">
+          {{!-- 関連記事 --}}
+          {{#if section.articles}}
+          <section class="related-articles" aria-labelledby="related-title">
+            <h2 id="related-title" class="sidebar-title">関連記事</h2>
+            <ul class="related-list" role="list">
+              {{#each section.articles}}
+                {{#unless (eq id ../article.id)}}
+                  {{#if @index < 5}}
+                  <li class="related-item">
+                    <a href="{{url}}" class="related-link">
+                      <h3 class="related-item-title">{{title}}</h3>
+                      <time datetime="{{updated_at}}" class="related-item-date">
+                        {{date updated_at timeago=true}}
+                      </time>
+                    </a>
+                  </li>
+                  {{/if}}
+                {{/unless}}
+              {{/each}}
+            </ul>
+            <a href="{{section.url}}" class="related-view-all">
+              {{section.name}}の記事一覧
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                <path d="M6 12l4-4-4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </a>
+          </section>
+          {{/if}}
+          
+          {{!-- 前後の記事ナビゲーション --}}
+          {{#if article.prev_article}}{{#if article.next_article}}
+          <nav class="article-nav" aria-label="記事ナビゲーション">
+            <h2 class="sidebar-title">記事ナビゲーション</h2>
+            {{#if article.prev_article}}
+            <a href="{{article.prev_article.url}}" class="nav-link nav-link--prev">
+              <div class="nav-direction">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                  <path d="M10 12L6 8l4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                前の記事
+              </div>
+              <div class="nav-title">{{truncate article.prev_article.title 50}}</div>
+            </a>
+            {{/if}}
+            {{#if article.next_article}}
+            <a href="{{article.next_article.url}}" class="nav-link nav-link--next">
+              <div class="nav-direction">
+                次の記事
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                  <path d="M6 12l4-4-4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </div>
+              <div class="nav-title">{{truncate article.next_article.title 50}}</div>
+            </a>
+            {{/if}}
+          </nav>
+          {{/if}}{{/if}}
+        </aside>
+        
       </div>
-    </footer>
-  </article>
+    </div>
+  </div>
+  
+</main>
+
+{{!-- 画像ライトボックス --}}
+<div id="image-lightbox" class="lightbox" role="dialog" aria-hidden="true" aria-labelledby="lightbox-title">
+  <div class="lightbox-overlay"></div>
+  <div class="lightbox-content">
+    <button type="button" class="lightbox-close" aria-label="ライトボックスを閉じる">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </button>
+    <img id="lightbox-image" src="" alt="" class="lightbox-image">
+    <div class="lightbox-caption" id="lightbox-title"></div>
+  </div>
 </div>
+
+{{!-- 記事ページ用JavaScript --}}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  
+  // 目次生成
+  {{#if settings.show_toc}}
+  generateTOC();
+  {{/if}}
+  
+  // コードブロックにコピーボタン追加
+  addCopyButtons();
+  
+  // 画像ライトボックス
+  initImageLightbox();
+  
+  // 記事フィードバック
+  initArticleFeedback();
+  
+  // スムーススクロール
+  initSmoothScroll();
+  
+  // 目次生成関数
+  function generateTOC() {
+    const articleBody = document.getElementById('article-body');
+    const tocList = document.querySelector('.toc-list');
+    const tocContainer = document.querySelector('.toc');
+    
+    if (!articleBody || !tocList || !tocContainer) return;
+    
+    const headings = articleBody.querySelectorAll('h1, h2, h3, h4, h5, h6');
+    if (headings.length === 0) {
+      tocContainer.style.display = 'none';
+      return;
+    }
+    
+    let tocHTML = '<ul role="list">';
+    
+    headings.forEach((heading, index) => {
+      const id = heading.id || `heading-${index}`;
+      heading.id = id;
+      
+      const level = parseInt(heading.tagName.charAt(1));
+      const text = heading.textContent;
+      
+      tocHTML += `
+        <li class="toc-item toc-level-${level}">
+          <a href="#${id}" class="toc-link">${text}</a>
+        </li>
+      `;
+    });
+    
+    tocHTML += '</ul>';
+    tocList.innerHTML = tocHTML;
+    
+    // 目次の展開/折りたたみ
+    const tocToggle = document.querySelector('.toc-toggle');
+    if (tocToggle) {
+      tocToggle.addEventListener('click', function() {
+        const expanded = this.getAttribute('aria-expanded') === 'true';
+        this.setAttribute('aria-expanded', !expanded);
+        tocList.classList.toggle('collapsed');
+      });
+    }
+  }
+  
+  // コードブロックコピー機能
+  function addCopyButtons() {
+    const codeBlocks = document.querySelectorAll('pre code, pre');
+    
+    codeBlocks.forEach((block) => {
+      const wrapper = document.createElement('div');
+      wrapper.className = 'code-block-wrapper';
+      
+      const button = document.createElement('button');
+      button.className = 'copy-code-btn';
+      button.setAttribute('aria-label', 'コードをコピー');
+      button.innerHTML = `
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+          <rect x="5" y="5" width="8" height="8" rx="1" stroke="currentColor" stroke-width="2"/>
+          <rect x="3" y="3" width="8" height="8" rx="1" stroke="currentColor" stroke-width="2"/>
+        </svg>
+        コピー
+      `;
+      
+      block.parentNode.insertBefore(wrapper, block);
+      wrapper.appendChild(button);
+      wrapper.appendChild(block);
+      
+      button.addEventListener('click', async function() {
+        const code = block.textContent;
+        
+        try {
+          await navigator.clipboard.writeText(code);
+          
+          // フィードバック表示
+          this.innerHTML = `
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+              <path d="M13.5 4.5L6 12l-3.5-3.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            コピーしました
+          `;
+          
+          setTimeout(() => {
+            this.innerHTML = `
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                <rect x="5" y="5" width="8" height="8" rx="1" stroke="currentColor" stroke-width="2"/>
+                <rect x="3" y="3" width="8" height="8" rx="1" stroke="currentColor" stroke-width="2"/>
+              </svg>
+              コピー
+            `;
+          }, 2000);
+          
+        } catch (err) {
+          console.error('コピーに失敗しました:', err);
+        }
+      });
+    });
+  }
+  
+  // 画像ライトボックス
+  function initImageLightbox() {
+    const images = document.querySelectorAll('.article-body img');
+    const lightbox = document.getElementById('image-lightbox');
+    const lightboxImg = document.getElementById('lightbox-image');
+    const lightboxTitle = document.getElementById('lightbox-title');
+    const closeBtn = document.querySelector('.lightbox-close');
+    const overlay = document.querySelector('.lightbox-overlay');
+    
+    if (!lightbox) return;
+    
+    images.forEach(img => {
+      img.style.cursor = 'pointer';
+      img.addEventListener('click', function() {
+        lightboxImg.src = this.src;
+        lightboxImg.alt = this.alt;
+        lightboxTitle.textContent = this.alt || 'イメージ';
+        lightbox.setAttribute('aria-hidden', 'false');
+        lightbox.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+      });
+    });
+    
+    function closeLightbox() {
+      lightbox.setAttribute('aria-hidden', 'true');
+      lightbox.style.display = 'none';
+      document.body.style.overflow = '';
+    }
+    
+    closeBtn.addEventListener('click', closeLightbox);
+    overlay.addEventListener('click', closeLightbox);
+    
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape' && lightbox.getAttribute('aria-hidden') === 'false') {
+        closeLightbox();
+      }
+    });
+  }
+  
+  // 記事フィードバック
+  function initArticleFeedback() {
+    const feedbackButtons = document.querySelectorAll('.feedback-btn');
+    
+    feedbackButtons.forEach(btn => {
+      btn.addEventListener('click', async function() {
+        const articleId = this.dataset.articleId;
+        const vote = this.dataset.vote;
+        
+        try {
+          // フィードバック送信（実際のAPIエンドポイントに応じて調整）
+          const response = await fetch(`/api/articles/${articleId}/vote`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ vote: vote })
+          });
+          
+          if (response.ok) {
+            // 成功時の UI フィードバック
+            feedbackButtons.forEach(b => {
+              b.disabled = true;
+              b.classList.remove('active');
+            });
+            this.classList.add('active');
+            
+            // お礼メッセージ表示
+            const feedbackDiv = document.querySelector('.article-feedback');
+            const thankYou = document.createElement('p');
+            thankYou.className = 'feedback-thanks';
+            thankYou.textContent = 'フィードバックをありがとうございます！';
+            feedbackDiv.appendChild(thankYou);
+          }
+        } catch (error) {
+          console.error('フィードバック送信に失敗しました:', error);
+        }
+      });
+    });
+  }
+  
+  // スムーススクロール
+  function initSmoothScroll() {
+    const links = document.querySelectorAll('a[href^="#"]');
+    
+    links.forEach(link => {
+      link.addEventListener('click', function(e) {
+        const targetId = this.getAttribute('href').substring(1);
+        const target = document.getElementById(targetId);
+        
+        if (target) {
+          e.preventDefault();
+          target.scrollIntoView({
+            behavior: 'smooth',
+            block: 'start'
+          });
+        }
+      });
+    });
+  }
+  
+});
+</script>

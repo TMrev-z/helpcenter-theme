@@ -13,7 +13,86 @@
           "type": "text",
           "description": "テーマのバージョン番号",
           "label": "テーマバージョン",
-          "value": "1.0.0"
+          "value": "2.0.0"
+        }
+      ]
+    },
+    {
+      "label": "ブランド設定",
+      "variables": [
+        {
+          "identifier": "brand_primary_color",
+          "type": "color",
+          "description": "ブランドプライマリカラー",
+          "label": "プライマリカラー",
+          "value": "#5B86E5"
+        },
+        {
+          "identifier": "brand_accent_color",
+          "type": "color",
+          "description": "ブランドアクセントカラー",
+          "label": "アクセントカラー",
+          "value": "#22D3EE"
+        },
+        {
+          "identifier": "brand_text_color",
+          "type": "color",
+          "description": "テキストカラー",
+          "label": "テキストカラー",
+          "value": "#E5E7EB"
+        },
+        {
+          "identifier": "logo_url",
+          "type": "text",
+          "description": "ロゴURL",
+          "label": "ロゴURL",
+          "value": ""
+        }
+      ]
+    },
+    {
+      "label": "表示設定",
+      "variables": [
+        {
+          "identifier": "show_toc",
+          "type": "checkbox",
+          "description": "記事ページに目次を表示",
+          "label": "目次を表示",
+          "value": true
+        },
+        {
+          "identifier": "show_popular_on_home",
+          "type": "checkbox",
+          "description": "ホームページに人気記事を表示",
+          "label": "人気記事を表示",
+          "value": true
+        },
+        {
+          "identifier": "show_contact_cta",
+          "type": "checkbox",
+          "description": "お問い合わせCTAを表示",
+          "label": "お問い合わせCTAを表示",
+          "value": true
+        },
+        {
+          "identifier": "max_popular_articles",
+          "type": "range",
+          "description": "人気記事の最大表示数",
+          "label": "人気記事の最大表示数",
+          "value": 6,
+          "min": 1,
+          "max": 12,
+          "step": 1
+        },
+        {
+          "identifier": "new_badge_days",
+          "type": "range",
+          "description": "新着バッジ表示日数",
+          "label": "新着バッジ表示日数",
+          "value": 30,
+          "min": 7,
+          "max": 90,
+          "step": 1
         }
       ]
     },
@@ -23,7 +102,7 @@
         {
           "identifier": "accent_color",
           "type": "color",
-          "description": "アクセントカラー",
+          "description": "アクセントカラー（廃止予定）",
           "label": "アクセントカラー",
           "value": "#6C63FF"
         },

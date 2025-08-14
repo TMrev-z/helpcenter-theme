@@ -1,33 +1,185 @@
-<div class="container">
-  <nav class="breadcrumbs">
-    <a href="{{help_center.url}}">{{help_center.name}}</a>
-    <span class="breadcrumb-separator">›</span>
-    <span>{{category.name}}</span>
+{{!-- カテゴリページ --}}
+<main id="main-content" class="category-page" role="main">
+  
+  {{!-- パンくずナビゲーション --}}
+  <nav class="breadcrumb" aria-label="パンくず">
+    <div class="container">
+      <ol class="breadcrumb-list" role="list">
+        <li class="breadcrumb-item">
+          <a href="{{help_center.url}}">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+              <path d="M6.5 14.5v-3.505c0-.245.25-.495.5-.495h2c.25 0 .5.25.5.5v3.5a.5.5 0 00.5.5h4a.5.5 0 00.5-.5v-7a.5.5 0 00-.146-.354L13 5.793V2.5a.5.5 0 00-.5-.5h-1a.5.5 0 00-.5.5v1.293L8.354 1.146a.5.5 0 00-.708 0l-7 7A.5.5 0 001 8.5v7a.5.5 0 00.5.5h4a.5.5 0 00.5-.5z" fill="currentColor"/>
+            </svg>
+            ホーム
+          </a>
+        </li>
+        <li class="breadcrumb-separator" aria-hidden="true">›</li>
+        <li class="breadcrumb-item breadcrumb-current" aria-current="page">
+          {{category.name}}
+        </li>
+      </ol>
+    </div>
   </nav>
 
-  <header class="page-header">
-    <h1>{{category.name}}</h1>
-    {{#if category.description}}
-      <p class="page-header-description">{{category.description}}</p>
-    {{/if}}
+  {{!-- カテゴリヘッダー --}}
+  <header class="category-header" aria-labelledby="category-title">
+    <div class="container">
+      <div class="category-header-content">
+        <h1 id="category-title" class="category-title">
+          {{category.name}}
+        </h1>
+        {{#if category.description}}
+        <p class="category-description">
+          {{category.description}}
+        </p>
+        {{/if}}
+        <div class="category-stats">
+          <span class="stat-item">
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+              <path d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z" fill="currentColor"/>
+            </svg>
+            {{sections.length}} セクション
+          </span>
+          <span class="stat-item">
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+              <path d="M4 4a2 2 0 00-2 2v8a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2H4z" stroke="currentColor" stroke-width="2"/>
+              <path d="M2 8h16" stroke="currentColor" stroke-width="2"/>
+            </svg>
+            {{article_count}} 記事
+          </span>
+        </div>
+      </div>
+      
+      {{!-- カテゴリ内検索 --}}
+      <div class="category-search">
+        <form action="{{help_center.url}}/search" method="GET" class="search-form" role="search">
+          <label for="category-search-input" class="sr-only">このカテゴリ内を検索</label>
+          <input type="hidden" name="category" value="{{category.id}}">
+          <div class="search-input-group">
+            <input 
+              type="search" 
+              id="category-search-input"
+              name="query" 
+              class="search-input" 
+              placeholder="{{category.name}}内を検索..."
+              aria-label="{{category.name}}内を検索"
+            >
+            <button type="submit" class="search-button" aria-label="検索">
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                <path d="M19 19l-4-4m0-7A7 7 0 111 8a7 7 0 0114 0z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
   </header>
 
-  <div class="section-list">
-    {{#each sections}}
-      <section class="section">
-        <h2 class="section-title">
-          <a href="{{url}}">{{name}}</a>
-        </h2>
-        {{#if articles}}
-          <ul class="article-list">
-            {{#each articles}}
-              <li>
-                <a href="{{url}}">{{title}}</a>
-              </li>
-            {{/each}}
-          </ul>
-        {{/if}}
-      </section>
-    {{/each}}
-  </div>
-</div>
+  {{!-- セクション一覧 --}}
+  <section class="sections-content" aria-labelledby="sections-title">
+    <div class="container">
+      <h2 id="sections-title" class="section-title">セクション一覧</h2>
+      
+      {{#if sections}}
+      <div class="sections-grid">
+        {{#each sections}}
+        <article class="section-card">
+          <div class="section-card-header">
+            <h3 class="section-card-title">
+              <a href="{{url}}">{{name}}</a>
+            </h3>
+            <div class="section-card-stats">
+              <span class="article-count">{{article_count}} 記事</span>
+            </div>
+          </div>
+          
+          {{#if description}}
+          <p class="section-card-description">
+            {{truncate description 150}}
+          </p>
+          {{/if}}
+          
+          {{!-- セクション内の人気記事 --}}
+          {{#if articles}}
+          <div class="section-card-articles">
+            <h4 class="section-articles-title">最新の記事</h4>
+            <ul class="section-articles-list" role="list">
+              {{#each articles}}
+                {{#if @index < 3}}
+                <li class="section-article-item">
+                  <a href="{{url}}" class="section-article-link">
+                    {{title}}
+                  </a>
+                  <time datetime="{{updated_at}}" class="section-article-date">
+                    {{date updated_at timeago=true}}
+                  </time>
+                </li>
+                {{/if}}
+              {{/each}}
+            </ul>
+            {{#if @index > 2}}
+            <a href="{{url}}" class="section-view-all">
+              すべての記事を見る ({{article_count}})
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                <path d="M6 12l4-4-4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </a>
+            {{/if}}
+          </div>
+          {{/if}}
+          
+          <a href="{{url}}" class="section-card-cta">
+            このセクションを見る
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+              <path d="M7 10h6m0 0l-3-3m3 3l-3 3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+          </a>
+        </article>
+        {{/each}}
+      </div>
+      {{else}}
+      <div class="empty-state">
+        <div class="empty-state-icon">
+          <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
+            <rect x="8" y="8" width="32" height="32" rx="4" stroke="currentColor" stroke-width="2"/>
+            <path d="M16 20h16M16 24h10M16 28h12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <h3 class="empty-state-title">セクションがありません</h3>
+        <p class="empty-state-description">
+          このカテゴリにはまだセクションが追加されていません。
+        </p>
+        <a href="{{help_center.url}}" class="btn btn-secondary">
+          ヘルプセンターホームに戻る
+        </a>
+      </div>
+      {{/if}}
+    </div>
+  </section>
+
+  {{!-- 関連カテゴリ --}}
+  {{#if other_categories}}
+  <aside class="related-categories" aria-labelledby="related-title">
+    <div class="container">
+      <h2 id="related-title" class="section-title">その他のカテゴリ</h2>
+      <div class="related-grid">
+        {{#each other_categories}}
+          {{#if @index < 4}}
+          <a href="{{url}}" class="related-card">
+            <div class="related-card-icon" aria-hidden="true">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                <rect x="3" y="3" width="18" height="18" rx="2" stroke="currentColor" stroke-width="2"/>
+                <path d="M9 9h.01M15 15h.01M9 15h.01M15 9h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              </svg>
+            </div>
+            <h3 class="related-card-title">{{name}}</h3>
+            <span class="related-card-count">{{article_count}} 記事</span>
+          </a>
+          {{/if}}
+        {{/each}}
+      </div>
+    </div>
+  </aside>
+  {{/if}}
+
+</main>

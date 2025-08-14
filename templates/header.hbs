@@ -1,17 +1,97 @@
-<nav class="nav" role="navigation">
-  <div class="nav-wrapper">
-    <div class="nav-left">
-      <a href="{{help_center.url}}" class="nav-logo">
-        {{help_center.name}}
-      </a>
-    </div>
-    <div class="nav-right">
-      <a href="{{settings.back_to_website_url}}" class="nav-link">
-        Webサイトへ戻る
-      </a>
-      <a href="{{settings.contact_url}}" class="nav-button">
-        お問い合わせ
-      </a>
-    </div>
+{{!-- スキップリンク（アクセシビリティ） --}}
+<a href="#main-content" class="skip-link">メインコンテンツへスキップ</a>
+
+{{!-- メインヘッダー --}}
+<header class="site-header" role="banner">
+  <div class="container">
+    <nav class="header-nav" role="navigation" aria-label="メインナビゲーション">
+      {{!-- ロゴ --}}
+      <div class="header-brand">
+        {{#if settings.logo_url}}
+          <a href="{{help_center.url}}" class="header-logo-link">
+            <img src="{{settings.logo_url}}" alt="{{help_center.name}}" class="header-logo-img">
+          </a>
+        {{else}}
+          <a href="{{help_center.url}}" class="header-logo-text">
+            {{help_center.name}}
+          </a>
+        {{/if}}
+      </div>
+
+      {{!-- グローバル検索 --}}
+      <div class="header-search">
+        <form action="{{help_center.url}}/search" method="GET" class="search-form" role="search">
+          <label for="header-search-input" class="sr-only">検索</label>
+          <input 
+            type="search" 
+            id="header-search-input"
+            name="query" 
+            class="search-input" 
+            placeholder="キーワードで検索..."
+            aria-label="ヘルプセンター内を検索"
+            autocomplete="off"
+          >
+          <button type="submit" class="search-button" aria-label="検索">
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+              <path d="M19 19l-4-4m0-7A7 7 0 111 8a7 7 0 0114 0z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
+          <div class="search-suggestions" id="search-suggestions" role="listbox" aria-label="検索候補"></div>
+        </form>
+      </div>
+
+      {{!-- ナビゲーションメニュー --}}
+      <ul class="header-links" role="list">
+        <li>
+          <a href="{{help_center.url}}" class="header-link" {{#is request.path help_center.url}}aria-current="page"{{/is}}>
+            ホーム
+          </a>
+        </li>
+        <li>
+          <a href="{{help_center.url}}/categories" class="header-link">
+            カテゴリ
+          </a>
+        </li>
+        {{#if help_center.community_enabled}}
+        <li>
+          <a href="{{help_center.community_url}}" class="header-link">
+            コミュニティ
+          </a>
+        </li>
+        {{/if}}
+        {{#if settings.show_contact_cta}}
+        <li>
+          <a href="{{settings.contact_url}}" class="header-link header-link--cta">
+            お問い合わせ
+          </a>
+        </li>
+        {{/if}}
+      </ul>
+
+      {{!-- モバイルメニューボタン --}}
+      <button 
+        type="button" 
+        class="mobile-menu-toggle" 
+        aria-label="メニューを開く" 
+        aria-expanded="false"
+        aria-controls="mobile-menu"
+      >
+        <span class="hamburger"></span>
+      </button>
+    </nav>
+
+    {{!-- モバイルメニュー --}}
+    <nav id="mobile-menu" class="mobile-menu" aria-label="モバイルナビゲーション" hidden>
+      <ul role="list">
+        <li><a href="{{help_center.url}}">ホーム</a></li>
+        <li><a href="{{help_center.url}}/categories">カテゴリ</a></li>
+        {{#if help_center.community_enabled}}
+        <li><a href="{{help_center.community_url}}">コミュニティ</a></li>
+        {{/if}}
+        {{#if settings.show_contact_cta}}
+        <li><a href="{{settings.contact_url}}">お問い合わせ</a></li>
+        {{/if}}
+      </ul>
+    </nav>
   </div>
-</nav>
+</header>

@@ -1,16 +1,83 @@
-<footer class="footer">
+{{!-- フッター --}}
+<footer class="site-footer" role="contentinfo">
   <div class="container">
     <div class="footer-content">
-      <div class="footer-links">
-        <a href="/hc/ja">ヘルプセンター</a>
-        <a href="{{settings.back_to_website_url}}">Webサイト</a>
-        <a href="/hc/ja/signin">ログイン</a>
+      {{!-- フッターナビゲーション --}}
+      <div class="footer-section footer-nav">
+        <h3 class="footer-title">クイックリンク</h3>
+        <ul class="footer-links" role="list">
+          <li><a href="{{help_center.url}}">ヘルプセンターホーム</a></li>
+          <li><a href="{{settings.back_to_website_url}}">Webサイトへ戻る</a></li>
+          {{#if settings.show_contact_cta}}
+          <li><a href="{{settings.contact_url}}">お問い合わせ</a></li>
+          {{/if}}
+          {{#if signed_in}}
+          <li><a href="{{help_center.url}}/requests">マイチケット</a></li>
+          {{/if}}
+        </ul>
       </div>
+
+      {{!-- 人気のカテゴリ --}}
+      <div class="footer-section footer-categories">
+        <h3 class="footer-title">人気のカテゴリ</h3>
+        <ul class="footer-links" role="list">
+          {{#each categories}}
+            {{#if @index < 5}}
+              <li><a href="{{url}}">{{name}}</a></li>
+            {{/if}}
+          {{/each}}
+        </ul>
+      </div>
+
+      {{!-- ソーシャルリンク（プレースホルダー） --}}
+      <div class="footer-section footer-social">
+        <h3 class="footer-title">フォローする</h3>
+        <div class="social-links">
+          <a href="#" class="social-link" aria-label="Twitter">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              <path d="M23 3a10.9 10.9 0 01-3.14 1.53 4.48 4.48 0 00-7.86 3v1A10.66 10.66 0 013 4s-4 9 5 13a11.64 11.64 0 01-7 2c9 5 20 0 20-11.5a4.5 4.5 0 00-.08-.83A7.72 7.72 0 0023 3z"/>
+            </svg>
+          </a>
+          <a href="#" class="social-link" aria-label="Facebook">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              <path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z"/>
+            </svg>
+          </a>
+          <a href="#" class="social-link" aria-label="LinkedIn">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              <path d="M16 8a6 6 0 016 6v7h-4v-7a2 2 0 00-2-2 2 2 0 00-2 2v7h-4v-7a6 6 0 016-6zM2 9h4v12H2z"/>
+              <circle cx="4" cy="4" r="2"/>
+            </svg>
+          </a>
+        </div>
+      </div>
+
+      {{!-- 企業情報 --}}
+      <div class="footer-section footer-info">
+        <h3 class="footer-title">{{help_center.name}}</h3>
+        <p class="footer-description">
+          お客様の問題解決をサポートする<br>
+          ヘルプセンターです
+        </p>
+        <div class="footer-meta">
+          <p>営業時間: 平日 9:00-18:00</p>
+          <p>お急ぎの場合: {{settings.contact_url}}</p>
+        </div>
+      </div>
+    </div>
+
+    {{!-- コピーライト --}}
+    <div class="footer-bottom">
       <div class="footer-copyright">
-        © 2025 {{help_center.name}}. All rights reserved.
+        <p>&copy; {{current_year}} {{help_center.name}}. All rights reserved.</p>
+      </div>
+      <div class="footer-legal">
+        <a href="#">プライバシーポリシー</a>
+        <span class="separator">|</span>
+        <a href="#">利用規約</a>
+        <span class="separator">|</span>
+        <a href="#">特定商取引法に基づく表記</a>
       </div>
     </div>
   </div>
 </footer>
-</body>
-</html>

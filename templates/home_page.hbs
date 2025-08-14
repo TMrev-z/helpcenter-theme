@@ -1,134 +1,210 @@
-<!DOCTYPE html>
-<html lang="ja">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>{{help_center.name}} - ヘルプセンター</title>
+{{!-- ホームページ --}}
+<main id="main-content" class="home-page" role="main">
   
-  <style>
-    :root {
-      --bg-dark: #1a1a2e;
-      --bg-body: #121218;
-      --text-primary: #FFFFFF;
-      --text-secondary: #B8BCC8;
-      --accent: {{settings.accent_color}};
-    }
-  </style>
-  
-  <link rel="stylesheet" href="{{asset 'style.css'}}">
-  <script src="{{asset 'script.js'}}"></script>
-</head>
-<body>
-{{!-- ヘッダー --}}
-<header class="site-header">
-  <div class="container">
-    <nav class="header-nav">
-      <a href="/hc/ja" class="header-logo">{{help_center.name}}</a>
-      <div class="header-links">
-        <a href="/hc/ja">ホーム</a>
-        <a href="/hc/ja/categories">カテゴリ</a>
-        <a href="/hc/ja/requests/new">お問い合わせ</a>
-        <a href="/hc/ja/signin">ログイン</a>
-      </div>
-    </nav>
-  </div>
-</header>
-
-{{!-- ヒーローセクション --}}
-<div class="hero-section">
-  <div class="container">
-    <h1 class="hero-title">どのようにお手伝いできますか？</h1>
-    <p class="hero-subtitle">お探しの情報を検索するか、カテゴリからお選びください</p>
-    
-    {{!-- 検索バー --}}
-    <form class="hero-search" action="/hc/ja/search" method="get">
-      <div class="search-wrapper">
-        <svg class="search-icon" width="20" height="20" viewBox="0 0 20 20" fill="none">
-          <path d="M9 17A8 8 0 109 1a8 8 0 000 16z" stroke="currentColor" stroke-width="2"/>
-          <path d="M15 15l4 4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-        </svg>
-        <input type="search" 
-               name="query" 
-               class="hero-search-input" 
-               placeholder="ヘルプを検索..."
-               aria-label="検索">
-        <button type="submit" class="hero-search-button" aria-label="検索実行">
-          検索
-        </button>
-      </div>
-    </form>
-    
-    {{!-- Popular Searches（JS生成） --}}
-    <div class="popular-searches" data-tags="{{settings.popular_searches}}">
-      <span class="popular-label">人気の検索:</span>
-    </div>
-  </div>
-</div>
-
-{{!-- カテゴリカード --}}
-<div class="categories-section">
-  <div class="container">
-    <div class="categories-grid">
-      {{#each categories}}
-        <a href="{{url}}" 
-           class="category-card" 
-           data-category-index="{{@index}}"
-           data-category-id="{{id}}">
-          <div class="category-icon">
-            {{#is @index 0}}
-              <svg width="40" height="40" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
-              </svg>
-            {{/is}}
-            {{#is @index 1}}
-              <svg width="40" height="40" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M20 4H4c-1.11 0-1.99.89-1.99 2L2 18c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V6c0-1.11-.89-2-2-2zm0 14H4v-6h16v6zm0-10H4V6h16v2z"/>
-              </svg>
-            {{/is}}
-            {{#is @index 2}}
-              <svg width="40" height="40" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M18 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-6 2c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm6 16H6v-1.4c0-2 4-3.1 6-3.1s6 1.1 6 3.1V20z"/>
-              </svg>
-            {{/is}}
-            {{#is @index 3}}
-              <svg width="40" height="40" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M22.7 19l-9.1-9.1c.9-2.3.4-5-1.5-6.9-2-2-5-2.4-7.4-1.3L9 6 6 9 1.6 4.7C.4 7.1.9 10.1 2.9 12.1c1.9 1.9 4.6 2.4 6.9 1.5l9.1 9.1c.4.4 1 .4 1.4 0l2.3-2.3c.5-.4.5-1.1.1-1.4z"/>
-              </svg>
-            {{/is}}
-            {{#is @index 4}}
-              <svg width="40" height="40" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M7 2v11h3v9l7-12h-4l4-8z"/>
-              </svg>
-            {{/is}}
-            {{#is @index 5}}
-              <svg width="40" height="40" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17h-2v-2h2v2zm2.07-7.75l-.9.92C13.45 12.9 13 13.5 13 15h-2v-.5c0-1.1.45-2.1 1.17-2.83l1.24-1.26c.37-.36.59-.86.59-1.41 0-1.1-.9-2-2-2s-2 .9-2 2H8c0-2.21 1.79-4 4-4s4 1.79 4 4c0 .88-.36 1.68-.93 2.25z"/>
-              </svg>
-            {{/is}}
+  {{!-- ヒーローセクション --}}
+  <section class="hero" aria-labelledby="hero-title">
+    <div class="container">
+      <div class="hero-content">
+        <h1 id="hero-title" class="hero-title">お困りですか？</h1>
+        <p class="hero-description">
+          キーワードで検索するか、カテゴリからお探しください。
+        </p>
+        
+        {{!-- 検索バー --}}
+        <div class="hero-search">
+          <form action="{{help_center.url}}/search" method="GET" class="search-form-large" role="search">
+            <label for="hero-search-input" class="sr-only">ヘルプセンター内を検索</label>
+            <div class="search-input-wrapper">
+              <input 
+                type="search" 
+                id="hero-search-input"
+                name="query" 
+                class="search-input-large" 
+                placeholder="例: パスワードリセット、プラン変更..."
+                aria-label="キーワードで検索"
+                autocomplete="off"
+                autofocus
+              >
+              <button type="submit" class="search-button-large" aria-label="検索を実行">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                検索
+              </button>
+            </div>
+          </form>
+          
+          {{!-- 人気の検索キーワード --}}
+          {{#if settings.popular_searches}}
+          <div class="popular-searches">
+            <span class="popular-searches-label">人気の検索:</span>
+            {{#each (split settings.popular_searches ',')}}
+              <a href="{{../help_center.url}}/search?query={{url_encode this}}" class="popular-tag">
+                {{this}}
+              </a>
+            {{/each}}
           </div>
-          <h2 class="category-title">{{name}}</h2>
-          <p class="category-description">{{description}}</p>
-          <span class="category-count">{{#if sections}}{{sections.length}}{{else}}0{{/if}} 件の記事</span>
-        </a>
-      {{/each}}
+          {{/if}}
+        </div>
+      </div>
     </div>
-  </div>
-</div>
+  </section>
 
-{{!-- フッター --}}
-<footer class="footer">
-  <div class="container">
-    <div class="footer-content">
-      <div class="footer-links">
-        <a href="/hc/ja">ヘルプセンター</a>
-        <a href="{{settings.back_to_website_url}}">Webサイト</a>
-        <a href="/hc/ja/signin">ログイン</a>
-      </div>
-      <div class="footer-copyright">
-        © 2025 {{help_center.name}}. All rights reserved.
+  {{!-- カテゴリグリッド --}}
+  <section class="categories-section" aria-labelledby="categories-title">
+    <div class="container">
+      <h2 id="categories-title" class="section-title">カテゴリから探す</h2>
+      <div class="categories-grid">
+        {{#each categories}}
+          <a href="{{url}}" class="category-card" data-category-id="{{id}}">
+            <div class="category-card-icon" aria-hidden="true">
+              {{!-- カテゴリアイコン（動的に変更可能） --}}
+              {{#is position 0}}
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none">
+                  <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2M12 11a4 4 0 100-8 4 4 0 000 8z" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+              {{/is}}
+              {{#is position 1}}
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none">
+                  <path d="M12 2v20M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+              {{/is}}
+              {{#is position 2}}
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none">
+                  <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+              {{/is}}
+              {{#is position 3}}
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none">
+                  <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              {{/is}}
+              {{#is position 4}}
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none">
+                  <path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z" stroke="currentColor" stroke-width="2"/>
+                </svg>
+              {{/is}}
+              {{#is position 5}}
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none">
+                  <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
+                  <path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3M12 17h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+              {{/is}}
+            </div>
+            <h3 class="category-card-title">{{name}}</h3>
+            <p class="category-card-description">
+              {{#if description}}
+                {{truncate description 100}}
+              {{else}}
+                {{section_count}} セクション • {{article_count}} 記事
+              {{/if}}
+            </p>
+            <span class="category-card-arrow" aria-hidden="true">→</span>
+          </a>
+        {{/each}}
       </div>
     </div>
-  </div>
-</footer>
-</body>
-</html>
+  </section>
+
+  {{!-- 人気記事セクション --}}
+  {{#if settings.show_popular_on_home}}
+  <section class="popular-articles" aria-labelledby="popular-title">
+    <div class="container">
+      <h2 id="popular-title" class="section-title">よく見られている記事</h2>
+      <div class="articles-list">
+        {{#each promoted_articles}}
+          {{#if @index < ../settings.max_popular_articles}}
+          <article class="article-item">
+            <div class="article-item-content">
+              {{#if promoted}}
+                <span class="article-badge article-badge--promoted">おすすめ</span>
+              {{/if}}
+              <h3 class="article-item-title">
+                <a href="{{url}}">{{title}}</a>
+              </h3>
+              <div class="article-item-meta">
+                <span class="article-section">{{section.name}}</span>
+                <span class="separator">•</span>
+                <time datetime="{{updated_at}}" class="article-date">
+                  {{date updated_at timeago=true}}
+                </time>
+              </div>
+            </div>
+            <a href="{{url}}" class="article-item-arrow" aria-label="{{title}}を読む">
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                <path d="M7 10h6m0 0l-3-3m3 3l-3 3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              </svg>
+            </a>
+          </article>
+          {{/if}}
+        {{/each}}
+      </div>
+    </div>
+  </section>
+  {{/if}}
+
+  {{!-- 最近の更新 --}}
+  <section class="recent-activity" aria-labelledby="recent-title">
+    <div class="container">
+      <h2 id="recent-title" class="section-title">最近の更新</h2>
+      <div class="activity-grid">
+        {{#each recent_articles}}
+          {{#if @index < 6}}
+          <article class="activity-card">
+            {{!-- NEWバッジの判定（設定日数以内） --}}
+            <div class="activity-card-header">
+              {{#if (is_recent updated_at ../settings.new_badge_days)}}
+                <span class="badge badge--new">NEW</span>
+              {{else if (is_recent updated_at 90)}}
+                <span class="badge badge--updated">更新</span>
+              {{/if}}
+              <time datetime="{{updated_at}}" class="activity-date">
+                {{date updated_at format="short"}}
+              </time>
+            </div>
+            <h3 class="activity-card-title">
+              <a href="{{url}}">{{title}}</a>
+            </h3>
+            <p class="activity-card-category">
+              {{section.name}} / {{section.category.name}}
+            </p>
+          </article>
+          {{/if}}
+        {{/each}}
+      </div>
+    </div>
+  </section>
+
+  {{!-- お問い合わせCTA --}}
+  {{#if settings.show_contact_cta}}
+  <section class="contact-cta" aria-labelledby="contact-title">
+    <div class="container">
+      <div class="cta-content">
+        <h2 id="contact-title" class="cta-title">解決しない場合は</h2>
+        <p class="cta-description">
+          ヘルプセンターで解決策が見つからない場合は、<br>
+          サポートチームまでお気軽にお問い合わせください。
+        </p>
+        <div class="cta-buttons">
+          <a href="{{settings.contact_url}}" class="btn btn-primary btn-large">
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+              <path d="M2 5a2 2 0 012-2h12a2 2 0 012 2v10a2 2 0 01-2 2H4a2 2 0 01-2-2V5z" stroke="currentColor" stroke-width="2"/>
+              <path d="M2 5l8 5 8-5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+            お問い合わせ
+          </a>
+          {{#if help_center.community_enabled}}
+          <a href="{{help_center.community_url}}" class="btn btn-secondary btn-large">
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+              <path d="M17 10c0 1-3 5-7 5s-7-4-7-5 3-5 7-5 7 4 7 5z" stroke="currentColor" stroke-width="2"/>
+              <circle cx="10" cy="10" r="3" stroke="currentColor" stroke-width="2"/>
+            </svg>
+            コミュニティで質問
+          </a>
+          {{/if}}
+        </div>
+      </div>
+    </div>
+  </section>
+  {{/if}}
+</main>

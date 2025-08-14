@@ -4,7 +4,156 @@ document.addEventListener('DOMContentLoaded', function() {
   initCategoryCards();
   initSmoothScroll();
   initMarkdownParser();
+  initMobileMenu();
+  initSearchSuggestions();
+  initAccessibility();
 });
+
+// Mobile menu functionality
+function initMobileMenu() {
+  const menuToggle = document.querySelector('.mobile-menu-toggle');
+  const mobileMenu = document.getElementById('mobile-menu');
+  
+  if (!menuToggle || !mobileMenu) return;
+  
+  menuToggle.addEventListener('click', function() {
+    const isExpanded = this.getAttribute('aria-expanded') === 'true';
+    
+    this.setAttribute('aria-expanded', !isExpanded);
+    mobileMenu.hidden = isExpanded;
+    
+    // Update button text for screen readers
+    this.setAttribute('aria-label', isExpanded ? 'メニューを開く' : 'メニューを閉じる');
+    
+    // Animate hamburger
+    const hamburger = this.querySelector('.hamburger');
+    if (hamburger) {
+      hamburger.style.transform = isExpanded ? 'rotate(0deg)' : 'rotate(45deg)';
+    }
+  });
+  
+  // Close menu when clicking outside
+  document.addEventListener('click', function(e) {
+    if (!menuToggle.contains(e.target) && !mobileMenu.contains(e.target)) {
+      menuToggle.setAttribute('aria-expanded', 'false');
+      mobileMenu.hidden = true;
+      menuToggle.setAttribute('aria-label', 'メニューを開く');
+      
+      const hamburger = menuToggle.querySelector('.hamburger');
+      if (hamburger) {
+        hamburger.style.transform = 'rotate(0deg)';
+      }
+    }
+  });
+  
+  // Close menu on escape key
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape' && menuToggle.getAttribute('aria-expanded') === 'true') {
+      menuToggle.setAttribute('aria-expanded', 'false');
+      mobileMenu.hidden = true;
+      menuToggle.focus();
+    }
+  });
+}
+
+// Search suggestions (placeholder for API integration)
+function initSearchSuggestions() {
+  const searchInputs = document.querySelectorAll('input[type="search"]');
+  
+  searchInputs.forEach(input => {
+    const suggestionsContainer = input.parentNode.querySelector('.search-suggestions');
+    if (!suggestionsContainer) return;
+    
+    let debounceTimer;
+    
+    input.addEventListener('input', function() {
+      clearTimeout(debounceTimer);
+      const query = this.value.trim();
+      
+      if (query.length < 2) {
+        suggestionsContainer.innerHTML = '';
+        suggestionsContainer.style.display = 'none';
+        return;
+      }
+      
+      debounceTimer = setTimeout(() => {
+        // Mock suggestions - in production, this would call an API
+        const mockSuggestions = [
+          'パスワードリセット',
+          'プラン変更',
+          'アカウント削除',
+          'ログインできない',
+          '料金について'
+        ].filter(suggestion => 
+          suggestion.toLowerCase().includes(query.toLowerCase())
+        );
+        
+        if (mockSuggestions.length > 0) {
+          suggestionsContainer.innerHTML = mockSuggestions
+            .map(suggestion => 
+              `<div class="suggestion-item" role="option" tabindex="-1">${suggestion}</div>`
+            ).join('');
+          suggestionsContainer.style.display = 'block';
+          
+          // Add click handlers to suggestions
+          suggestionsContainer.querySelectorAll('.suggestion-item').forEach(item => {
+            item.addEventListener('click', () => {
+              input.value = item.textContent;
+              suggestionsContainer.style.display = 'none';
+              input.form.submit();
+            });
+          });
+        } else {
+          suggestionsContainer.style.display = 'none';
+        }
+      }, 300);
+    });
+    
+    // Hide suggestions when input loses focus
+    input.addEventListener('blur', function() {
+      setTimeout(() => {
+        suggestionsContainer.style.display = 'none';
+      }, 200);
+    });
+  });
+}
+
+// Accessibility enhancements
+function initAccessibility() {
+  // Add focus indicators for keyboard navigation
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Tab') {
+      document.body.classList.add('keyboard-navigation');
+    }
+  });
+  
+  document.addEventListener('mousedown', function() {
+    document.body.classList.remove('keyboard-navigation');
+  });
+  
+  // Improve screen reader experience for dynamic content
+  const dynamicElements = document.querySelectorAll('[aria-live]');
+  dynamicElements.forEach(element => {
+    const observer = new MutationObserver(function(mutations) {
+      mutations.forEach(function(mutation) {
+        if (mutation.type === 'childList' || mutation.type === 'characterData') {
+          // Announce changes to screen readers
+          element.setAttribute('aria-live', 'polite');
+        }
+      });
+    });
+    
+    observer.observe(element, { childList: true, subtree: true, characterData: true });
+  });
+  
+  // Add reading time helper function
+  window.readingTime = function(content) {
+    if (!content) return 1;
+    const wordsPerMinute = 500; // 日本語での平均読み速度（文字/分）
+    const textLength = content.replace(/<[^>]*>/g, '').length;
+    return Math.max(1, Math.ceil(textLength / wordsPerMinute));
+  };
+}
 
 // Popular searches functionality
 function initPopularSearches() {

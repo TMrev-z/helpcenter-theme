@@ -1,115 +1,293 @@
-{{!-- templates/section_page.hbs --}}
-<!DOCTYPE html>
-<html lang="ja">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>{{section.name}} - {{help_center.name}}</title>
-  <style>:root { --bg-dark: #1a1a2e; --bg-body: #121218; --text-primary: #FFFFFF; --text-secondary: #B8BCC8; --accent: {{settings.accent_color}}; }</style>
-  <link rel="stylesheet" href="{{asset 'style.css'}}">
-  <script src="{{asset 'script.js'}}"></script>
-</head>
-<body>
-{{!-- ヘッダー --}}
-<header class="site-header">
-  <div class="container">
-    <nav class="header-nav">
-      <a href="/hc/ja" class="header-logo">{{help_center.name}}</a>
-      <div class="header-links">
-        <a href="/hc/ja">ホーム</a>
-        <a href="/hc/ja/categories">カテゴリ</a>
-        <a href="/hc/ja/requests/new">お問い合わせ</a>
-        <a href="/hc/ja/signin">ログイン</a>
-      </div>
-    </nav>
-  </div>
-</header>
+{{!-- セクションページ --}}
+<main id="main-content" class="section-page" role="main">
+  
+  {{!-- パンくずナビゲーション --}}
+  <nav class="breadcrumb" aria-label="パンくず">
+    <div class="container">
+      <ol class="breadcrumb-list" role="list">
+        <li class="breadcrumb-item">
+          <a href="{{help_center.url}}">ホーム</a>
+        </li>
+        <li class="breadcrumb-separator" aria-hidden="true">›</li>
+        <li class="breadcrumb-item">
+          <a href="{{section.category.url}}">{{section.category.name}}</a>
+        </li>
+        <li class="breadcrumb-separator" aria-hidden="true">›</li>
+        <li class="breadcrumb-item breadcrumb-current" aria-current="page">
+          {{section.name}}
+        </li>
+      </ol>
+    </div>
+  </nav>
 
-{{!-- パンくずナビゲーション --}}
-<div class="breadcrumb-section">
-  <div class="container">
-    <nav class="breadcrumb">
-      <a href="/hc/ja" class="breadcrumb-item">ヘルプセンター</a>
-      <span class="breadcrumb-separator">›</span>
-      <span class="breadcrumb-current">{{section.name}}</span>
-    </nav>
-  </div>
-</div>
-
-{{!-- セクションヘッダー --}}
-<div class="section-header">
-  <div class="container">
-    <div class="section-header-content">
-      <h1 class="section-title">{{section.name}}</h1>
-      {{#if section.description}}
+  {{!-- セクションヘッダー --}}
+  <header class="section-header" aria-labelledby="section-title">
+    <div class="container">
+      <div class="section-header-content">
+        <h1 id="section-title" class="section-title">{{section.name}}</h1>
+        {{#if section.description}}
         <p class="section-description">{{section.description}}</p>
-      {{/if}}
-      <div class="section-stats">
-        <span class="article-count">記事一覧</span>
+        {{/if}}
+        <div class="section-stats">
+          <span class="stat-item">
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+              <path d="M4 4a2 2 0 00-2 2v8a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2H4z" stroke="currentColor" stroke-width="2"/>
+              <path d="M2 8h16" stroke="currentColor" stroke-width="2"/>
+            </svg>
+            {{section.articles.length}} 記事
+          </span>
+        </div>
       </div>
     </div>
-  </div>
-</div>
+  </header>
 
-{{!-- 記事一覧 --}}
-<main class="section-content">
-  <div class="container">
-    {{#if section.articles}}
-      <div class="articles-grid">
-        {{#each section.articles}}
-          <article class="article-card">
-            <div class="article-card-header">
-              {{#if promoted}}
-                <span class="article-label article-label--popular">人気</span>
-              {{/if}}
-              <h2 class="article-card-title">
-                <a href="{{url}}" class="article-card-link">{{title}}</a>
-              </h2>
-            </div>
-            
-            <div class="article-card-content">
-              <p class="article-card-excerpt">{{title}}</p>
-            </div>
-            
-            <div class="article-card-footer">
-              <div class="article-card-meta">
-                <time class="article-card-date">記事</time>
-              </div>
-              <a href="{{url}}" class="article-card-button">
-                記事を読む
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                  <path d="M6 3l5 5-5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  {{!-- フィルタとソート --}}
+  <section class="articles-controls" aria-label="記事の表示設定">
+    <div class="container">
+      <div class="controls-wrapper">
+        {{!-- ソート --}}
+        <div class="sort-controls">
+          <label for="article-sort" class="sort-label">並び順:</label>
+          <select id="article-sort" class="sort-select" aria-label="記事の並び順を選択">
+            <option value="updated">更新日順</option>
+            <option value="created">作成日順</option>
+            <option value="title">タイトル順</option>
+            <option value="popularity">人気順</option>
+          </select>
+        </div>
+
+        {{!-- 表示件数 --}}
+        <div class="display-controls">
+          <label for="articles-per-page" class="display-label">表示件数:</label>
+          <select id="articles-per-page" class="display-select" aria-label="1ページあたりの表示件数">
+            <option value="10">10件</option>
+            <option value="20" selected>20件</option>
+            <option value="50">50件</option>
+          </select>
+        </div>
+
+        {{!-- 検索 --}}
+        <div class="section-search">
+          <form action="{{help_center.url}}/search" method="GET" class="search-form" role="search">
+            <label for="section-search-input" class="sr-only">このセクション内を検索</label>
+            <input type="hidden" name="section" value="{{section.id}}">
+            <div class="search-input-group">
+              <input 
+                type="search" 
+                id="section-search-input"
+                name="query" 
+                class="search-input" 
+                placeholder="{{section.name}}内を検索..."
+                aria-label="{{section.name}}内を検索"
+              >
+              <button type="submit" class="search-button" aria-label="検索">
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                  <path d="M19 19l-4-4m0-7A7 7 0 111 8a7 7 0 0114 0z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                 </svg>
-              </a>
+              </button>
             </div>
-          </article>
+          </form>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  {{!-- 記事一覧 --}}
+  <section class="articles-content" aria-labelledby="articles-title">
+    <div class="container">
+      <h2 id="articles-title" class="sr-only">記事一覧</h2>
+      
+      {{#if section.articles}}
+      <div class="articles-list" id="articles-list">
+        {{#each section.articles}}
+        <article class="article-card" data-created="{{created_at}}" data-updated="{{updated_at}}" data-title="{{title}}">
+          <div class="article-card-header">
+            <div class="article-badges">
+              {{!-- NEW バッジ（設定日数以内） --}}
+              {{#if (is_recent created_at ../settings.new_badge_days)}}
+                <span class="badge badge--new">NEW</span>
+              {{else if (is_recent updated_at 90)}}
+                <span class="badge badge--updated">更新</span>
+              {{/if}}
+              
+              {{!-- 推奨記事バッジ --}}
+              {{#if promoted}}
+                <span class="badge badge--promoted">おすすめ</span>
+              {{/if}}
+            </div>
+            
+            <h3 class="article-card-title">
+              <a href="{{url}}" class="article-link">{{title}}</a>
+            </h3>
+          </div>
+          
+          <div class="article-card-content">
+            {{#if body}}
+            <p class="article-excerpt">
+              {{truncate (strip_markdown body) 200}}...
+            </p>
+            {{/if}}
+            
+            <div class="article-meta">
+              <div class="meta-group">
+                <time datetime="{{created_at}}" class="meta-date">
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                    <circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="2"/>
+                    <path d="M8 4v4l3 3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                  </svg>
+                  作成: {{date created_at format="short"}}
+                </time>
+                {{#unless (eq created_at updated_at)}}
+                <time datetime="{{updated_at}}" class="meta-date meta-updated">
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                    <path d="M3 8V6a5 5 0 0110 0v2M6 8v2a2 2 0 104 0V8" stroke="currentColor" stroke-width="2"/>
+                  </svg>
+                  更新: {{date updated_at timeago=true}}
+                </time>
+                {{/unless}}
+              </div>
+              
+              {{!-- 推定読了時間 --}}
+              {{#if body}}
+              <div class="reading-time">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                  <path d="M2 6s1.5-2 6-2 6 2 6 2v6s-1.5 2-6 2-6-2-6-2V6z" stroke="currentColor" stroke-width="2"/>
+                  <path d="M6 8h4M6 10h2" stroke="currentColor" stroke-width="1" stroke-linecap="round"/>
+                </svg>
+                <span class="reading-time-text">約 {{reading_time body}} 分</span>
+              </div>
+              {{/if}}
+            </div>
+          </div>
+          
+          <div class="article-card-footer">
+            <a href="{{url}}" class="article-read-more">
+              記事を読む
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                <path d="M6 12l4-4-4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </a>
+          </div>
+        </article>
         {{/each}}
       </div>
-    {{else}}
+      
+      {{!-- ページネーション --}}
+      {{#if pagination.has_more}}
+      <nav class="pagination" aria-label="ページネーション">
+        <div class="pagination-info">
+          {{pagination.current_start}} - {{pagination.current_end}} / {{pagination.total}} 件
+        </div>
+        <div class="pagination-controls">
+          {{#if pagination.has_prev}}
+          <a href="{{pagination.prev_url}}" class="pagination-btn pagination-prev">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+              <path d="M10 12L6 8l4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            前へ
+          </a>
+          {{/if}}
+          {{#if pagination.has_next}}
+          <a href="{{pagination.next_url}}" class="pagination-btn pagination-next">
+            次へ
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+              <path d="M6 12l4-4-4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </a>
+          {{/if}}
+        </div>
+      </nav>
+      {{/if}}
+      
+      {{else}}
+      {{!-- 記事が存在しない場合 --}}
       <div class="empty-state">
         <div class="empty-state-icon">
-          📄
+          <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
+            <rect x="8" y="8" width="32" height="32" rx="4" stroke="currentColor" stroke-width="2"/>
+            <path d="M16 20h16M16 24h10M16 28h12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            <circle cx="24" cy="24" r="2" fill="currentColor"/>
+          </svg>
         </div>
         <h3 class="empty-state-title">記事がありません</h3>
-        <p class="empty-state-description">このセクションにはまだ記事が追加されていません。</p>
-        <a href="/hc/ja" class="btn btn-primary">ヘルプセンターに戻る</a>
+        <p class="empty-state-description">
+          このセクションにはまだ記事が追加されていません。
+        </p>
+        <div class="empty-state-actions">
+          <a href="{{section.category.url}}" class="btn btn-secondary">
+            {{section.category.name}}に戻る
+          </a>
+          {{#if settings.show_contact_cta}}
+          <a href="{{settings.contact_url}}" class="btn btn-primary">
+            お問い合わせ
+          </a>
+          {{/if}}
+        </div>
       </div>
-    {{/if}}
-  </div>
-</main>
-<footer class="footer">
-  <div class="container">
-    <div class="footer-content">
-      <div class="footer-links">
-        <a href="/hc/ja">ヘルプセンター</a>
-        <a href="{{settings.back_to_website_url}}">Webサイト</a>
-        <a href="/hc/ja/signin">ログイン</a>
-      </div>
-      <div class="footer-copyright">
-        © 2025 {{help_center.name}}. All rights reserved.
+      {{/if}}
+    </div>
+  </section>
+
+  {{!-- 関連セクション --}}
+  {{#if related_sections}}
+  <aside class="related-sections" aria-labelledby="related-sections-title">
+    <div class="container">
+      <h2 id="related-sections-title" class="section-title">関連するセクション</h2>
+      <div class="related-grid">
+        {{#each related_sections}}
+          {{#if @index < 3}}
+          <a href="{{url}}" class="related-card">
+            <h3 class="related-card-title">{{name}}</h3>
+            <p class="related-card-description">{{truncate description 80}}</p>
+            <span class="related-card-count">{{article_count}} 記事</span>
+          </a>
+          {{/if}}
+        {{/each}}
       </div>
     </div>
-  </div>
-</footer>
-</body>
-</html>
+  </aside>
+  {{/if}}
+
+</main>
+
+{{!-- セクションページ用JavaScript --}}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  // ソート機能
+  const sortSelect = document.getElementById('article-sort');
+  const articlesList = document.getElementById('articles-list');
+  
+  if (sortSelect && articlesList) {
+    sortSelect.addEventListener('change', function() {
+      const sortBy = this.value;
+      const articles = Array.from(articlesList.querySelectorAll('.article-card'));
+      
+      articles.sort(function(a, b) {
+        switch (sortBy) {
+          case 'updated':
+            return new Date(b.dataset.updated) - new Date(a.dataset.updated);
+          case 'created':
+            return new Date(b.dataset.created) - new Date(a.dataset.created);
+          case 'title':
+            return a.dataset.title.localeCompare(b.dataset.title, 'ja');
+          default:
+            return 0;
+        }
+      });
+      
+      // DOM要素を並べ替え
+      articles.forEach(function(article) {
+        articlesList.appendChild(article);
+      });
+    });
+  }
+  
+  // 読了時間の計算
+  window.readingTime = function(content) {
+    if (!content) return 1;
+    const wordsPerMinute = 500; // 日本語での平均読み速度（文字/分）
+    const textLength = content.replace(/<[^>]*>/g, '').length;
+    return Math.max(1, Math.ceil(textLength / wordsPerMinute));
+  };
+});
+</script>

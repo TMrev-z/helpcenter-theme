@@ -1,34 +1,350 @@
-{{!-- templates/search_results.hbs --}}
-<!DOCTYPE html>
-<html lang="ja">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>検索結果 - {{help_center.name}}</title>
-  <style>:root { --bg-dark: #1a1a2e; --bg-body: #121218; --text-primary: #FFFFFF; --text-secondary: #B8BCC8; --accent: {{settings.accent_color}}; }</style>
-  <link rel="stylesheet" href="{{asset 'style.css'}}">
-  <script src="{{asset 'script.js'}}"></script>
-</head>
-<body>
-<main class="container">
-  <h1>検索結果</h1>
-  {{#if results}}
-    <ul>{{#each results}}<li><a href="{{url}}">{{title}}</a></li>{{/each}}</ul>
-  {{else}}<p>該当する結果は見つかりませんでした。</p>{{/if}}
-</main>
-<footer class="footer">
-  <div class="container">
-    <div class="footer-content">
-      <div class="footer-links">
-        <a href="/hc/ja">ヘルプセンター</a>
-        <a href="{{settings.back_to_website_url}}">Webサイト</a>
-        <a href="/hc/ja/signin">ログイン</a>
-      </div>
-      <div class="footer-copyright">
-        © 2025 {{help_center.name}}. All rights reserved.
+{{!-- 検索結果ページ --}}
+<main id="main-content" class="search-results-page" role="main">
+  
+  {{!-- パンくずナビゲーション --}}
+  <nav class="breadcrumb" aria-label="パンくず">
+    <div class="container">
+      <ol class="breadcrumb-list" role="list">
+        <li class="breadcrumb-item">
+          <a href="{{help_center.url}}">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+              <path d="M6.5 14.5v-3.505c0-.245.25-.495.5-.495h2c.25 0 .5.25.5.5v3.5a.5.5 0 00.5.5h4a.5.5 0 00.5-.5v-7a.5.5 0 00-.146-.354L13 5.793V2.5a.5.5 0 00-.5-.5h-1a.5.5 0 00-.5.5v1.293L8.354 1.146a.5.5 0 00-.708 0l-7 7A.5.5 0 001 8.5v7a.5.5 0 00.5.5h4a.5.5 0 00.5-.5z" fill="currentColor"/>
+            </svg>
+            ホーム
+          </a>
+        </li>
+        <li class="breadcrumb-separator" aria-hidden="true">›</li>
+        <li class="breadcrumb-item breadcrumb-current" aria-current="page">
+          検索結果
+        </li>
+      </ol>
+    </div>
+  </nav>
+
+  {{!-- 検索ヘッダー --}}
+  <header class="search-header" aria-labelledby="search-title">
+    <div class="container">
+      <div class="search-header-content">
+        <h1 id="search-title" class="search-title">
+          {{#if query}}
+          「{{query}}」の検索結果
+          {{else}}
+          検索結果
+          {{/if}}
+        </h1>
+        
+        {{#if query}}
+        <p class="search-summary">
+          {{results.length}} 件の結果が見つかりました
+        </p>
+        {{/if}}
+        
+        {{!-- 検索フォーム --}}
+        <div class="search-form-container">
+          <form action="{{help_center.url}}/search" method="GET" class="search-form-large" role="search">
+            <label for="search-input" class="sr-only">検索キーワード</label>
+            <div class="search-input-wrapper">
+              <input 
+                type="search" 
+                id="search-input"
+                name="query" 
+                class="search-input-large" 
+                placeholder="キーワードで検索..."
+                value="{{query}}"
+                aria-label="検索キーワードを入力"
+                autofocus
+              >
+              <button type="submit" class="search-button-large" aria-label="検索を実行">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                検索
+              </button>
+            </div>
+          </form>
+        </div>
       </div>
     </div>
-  </div>
-</footer>
-</body>
-</html>
+  </header>
+
+  {{!-- 検索結果 --}}
+  <section class="search-results" aria-labelledby="results-title">
+    <div class="container">
+      <h2 id="results-title" class="sr-only">検索結果一覧</h2>
+      
+      {{#if results}}
+      {{!-- フィルタとソート --}}
+      <div class="search-controls" aria-label="結果の表示設定">
+        <div class="controls-wrapper">
+          <div class="search-filters">
+            <label for="content-type" class="filter-label">カテゴリ:</label>
+            <select id="content-type" class="filter-select" aria-label="コンテンツタイプで絞り込み">
+              <option value="">すべて</option>
+              {{#each categories}}
+              <option value="{{id}}" {{#if (eq id ../category)}}selected{{/if}}>{{name}}</option>
+              {{/each}}
+            </select>
+          </div>
+          
+          <div class="sort-controls">
+            <label for="search-sort" class="sort-label">並び順:</label>
+            <select id="search-sort" class="sort-select" aria-label="検索結果の並び順を選択">
+              <option value="relevance">関連度順</option>
+              <option value="updated">更新日順</option>
+              <option value="created">作成日順</option>
+              <option value="title">タイトル順</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      
+      {{!-- 結果一覧 --}}
+      <div class="results-list" id="results-list">
+        {{#each results}}
+        <article class="result-item" data-type="{{content_type}}" data-category="{{section.category.id}}">
+          <div class="result-content">
+            <div class="result-header">
+              <div class="result-badges">
+                {{#if promoted}}
+                  <span class="badge badge--promoted">おすすめ</span>
+                {{/if}}
+                
+                {{#if (is_recent created_at ../settings.new_badge_days)}}
+                  <span class="badge badge--new">NEW</span>
+                {{else if (is_recent updated_at 90)}}
+                  <span class="badge badge--updated">更新</span>
+                {{/if}}
+              </div>
+              
+              <h3 class="result-title">
+                <a href="{{url}}" class="result-link">{{title}}</a>
+              </h3>
+            </div>
+            
+            {{#if snippet}}
+            <p class="result-snippet">
+              {{{snippet}}}
+            </p>
+            {{else if body}}
+            <p class="result-snippet">
+              {{truncate (strip_markdown body) 200}}...
+            </p>
+            {{/if}}
+            
+            <div class="result-meta">
+              <div class="meta-group">
+                <span class="result-section">
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                    <rect x="2" y="3" width="12" height="10" rx="2" stroke="currentColor" stroke-width="2"/>
+                    <path d="M6 7h4M6 9h2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                  </svg>
+                  <a href="{{section.url}}" class="section-link">{{section.name}}</a>
+                </span>
+                
+                <span class="result-category">
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                    <rect x="1" y="3" width="14" height="10" rx="2" stroke="currentColor" stroke-width="2"/>
+                    <path d="M5 7h6M5 9h4" stroke="currentColor" stroke-width="1" stroke-linecap="round"/>
+                  </svg>
+                  <a href="{{section.category.url}}" class="category-link">{{section.category.name}}</a>
+                </span>
+              </div>
+              
+              <time datetime="{{updated_at}}" class="result-date">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                  <circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="2"/>
+                  <path d="M8 4v4l3 3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+                {{date updated_at timeago=true}}
+              </time>
+            </div>
+          </div>
+          
+          <a href="{{url}}" class="result-action" aria-label="{{title}}を読む">
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+              <path d="M7 10h6m0 0l-3-3m3 3l-3 3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+          </a>
+        </article>
+        {{/each}}
+      </div>
+      
+      {{!-- ページネーション --}}
+      {{#if pagination.has_more}}
+      <nav class="pagination" aria-label="検索結果ページネーション">
+        <div class="pagination-info">
+          {{pagination.current_start}} - {{pagination.current_end}} / {{pagination.total}} 件
+        </div>
+        <div class="pagination-controls">
+          {{#if pagination.has_prev}}
+          <a href="{{pagination.prev_url}}" class="pagination-btn pagination-prev">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+              <path d="M10 12L6 8l4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            前へ
+          </a>
+          {{/if}}
+          {{#if pagination.has_next}}
+          <a href="{{pagination.next_url}}" class="pagination-btn pagination-next">
+            次へ
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+              <path d="M6 12l4-4-4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </a>
+          {{/if}}
+        </div>
+      </nav>
+      {{/if}}
+      
+      {{else}}
+      {{!-- 結果が見つからない場合 --}}
+      <div class="no-results">
+        <div class="no-results-icon">
+          <svg width="64" height="64" viewBox="0 0 64 64" fill="none" aria-hidden="true">
+            <circle cx="32" cy="32" r="24" stroke="currentColor" stroke-width="2"/>
+            <path d="M50 50l-8-8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            <path d="M28 28h8M28 36h6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <h3 class="no-results-title">
+          {{#if query}}
+          「{{query}}」に一致する結果が見つかりませんでした
+          {{else}}
+          検索キーワードを入力してください
+          {{/if}}
+        </h3>
+        <div class="no-results-suggestions">
+          <p>以下をお試しください：</p>
+          <ul role="list">
+            <li>スペルを確認してください</li>
+            <li>より一般的なキーワードを試してください</li>
+            <li>同義語や関連する言葉を使ってみてください</li>
+            <li>キーワードを減らしてみてください</li>
+          </ul>
+        </div>
+        <div class="no-results-actions">
+          <a href="{{help_center.url}}" class="btn btn-secondary">
+            ヘルプセンターホーム
+          </a>
+          {{#if settings.show_contact_cta}}
+          <a href="{{settings.contact_url}}" class="btn btn-primary">
+            お問い合わせ
+          </a>
+          {{/if}}
+        </div>
+      </div>
+      {{/if}}
+    </div>
+  </section>
+
+</main>
+
+{{!-- 検索結果ページ用JavaScript --}}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  
+  // フィルタ機能
+  initSearchFilters();
+  
+  // ソート機能
+  initSearchSort();
+  
+  // 検索結果のハイライト
+  highlightSearchTerms();
+  
+  function initSearchFilters() {
+    const categoryFilter = document.getElementById('content-type');
+    const resultItems = document.querySelectorAll('.result-item');
+    
+    if (!categoryFilter) return;
+    
+    categoryFilter.addEventListener('change', function() {
+      const selectedCategory = this.value;
+      
+      resultItems.forEach(item => {
+        const itemCategory = item.dataset.category;
+        
+        if (!selectedCategory || itemCategory === selectedCategory) {
+          item.style.display = '';
+        } else {
+          item.style.display = 'none';
+        }
+      });
+      
+      updateResultCount();
+    });
+  }
+  
+  function initSearchSort() {
+    const sortSelect = document.getElementById('search-sort');
+    const resultsList = document.getElementById('results-list');
+    
+    if (!sortSelect || !resultsList) return;
+    
+    sortSelect.addEventListener('change', function() {
+      const sortBy = this.value;
+      const results = Array.from(resultsList.querySelectorAll('.result-item'));
+      
+      results.sort((a, b) => {
+        const aLink = a.querySelector('.result-link');
+        const bLink = b.querySelector('.result-link');
+        const aTitle = aLink ? aLink.textContent : '';
+        const bTitle = bLink ? bLink.textContent : '';
+        
+        switch (sortBy) {
+          case 'title':
+            return aTitle.localeCompare(bTitle, 'ja');
+          case 'updated':
+          case 'created':
+            // 実際の実装では、データ属性から日付を取得
+            return 0; // プレースホルダー
+          default: // relevance
+            return 0;
+        }
+      });
+      
+      results.forEach(result => {
+        resultsList.appendChild(result);
+      });
+    });
+  }
+  
+  function highlightSearchTerms() {
+    const query = new URLSearchParams(window.location.search).get('query');
+    if (!query) return;
+    
+    const terms = query.toLowerCase().split(' ').filter(term => term.length > 2);
+    const snippets = document.querySelectorAll('.result-snippet');
+    
+    snippets.forEach(snippet => {
+      let html = snippet.innerHTML;
+      
+      terms.forEach(term => {
+        const regex = new RegExp(`(${escapeRegExp(term)})`, 'gi');
+        html = html.replace(regex, '<mark>$1</mark>');
+      });
+      
+      snippet.innerHTML = html;
+    });
+  }
+  
+  function escapeRegExp(string) {
+    return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  }
+  
+  function updateResultCount() {
+    const visibleResults = document.querySelectorAll('.result-item:not([style*="display: none"])');
+    const totalResults = document.querySelectorAll('.result-item');
+    const summary = document.querySelector('.search-summary');
+    
+    if (summary) {
+      if (visibleResults.length !== totalResults.length) {
+        summary.textContent = `${visibleResults.length} / ${totalResults.length} 件の結果を表示中`;
+      } else {
+        summary.textContent = `${totalResults.length} 件の結果が見つかりました`;
+      }
+    }
+  }
+  
+});
+</script>
