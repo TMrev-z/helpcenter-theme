@@ -31,8 +31,6 @@
     <nav class="breadcrumb">
       <a href="/hc/ja" class="breadcrumb-item">ヘルプセンター</a>
       <span class="breadcrumb-separator">›</span>
-      <a href="{{section.category.url}}" class="breadcrumb-item">{{section.category.name}}</a>
-      <span class="breadcrumb-separator">›</span>
       <span class="breadcrumb-current">{{section.name}}</span>
     </nav>
   </div>
@@ -47,10 +45,7 @@
         <p class="section-description">{{section.description}}</p>
       {{/if}}
       <div class="section-stats">
-        <span class="article-count">{{section.articles.length}} 件の記事</span>
-        {{#if section.created_at}}
-          <span class="section-updated">更新日: {{date section.updated_at timeago=true}}</span>
-        {{/if}}
+        <span class="article-count">記事一覧</span>
       </div>
     </div>
   </div>
@@ -64,8 +59,8 @@
         {{#each section.articles}}
           <article class="article-card">
             <div class="article-card-header">
-              {{#if label}}
-                <span class="article-label article-label--{{label}}">{{label}}</span>
+              {{#if promoted}}
+                <span class="article-label article-label--popular">人気</span>
               {{/if}}
               <h2 class="article-card-title">
                 <a href="{{url}}" class="article-card-link">{{title}}</a>
@@ -73,21 +68,12 @@
             </div>
             
             <div class="article-card-content">
-              {{#if snippet}}
-                <p class="article-card-excerpt">{{snippet}}</p>
-              {{/if}}
+              <p class="article-card-excerpt">{{title}}</p>
             </div>
             
             <div class="article-card-footer">
               <div class="article-card-meta">
-                {{#if created_at}}
-                  <time class="article-card-date">{{date created_at}}</time>
-                {{/if}}
-                {{#if vote_sum}}
-                  <div class="article-card-votes">
-                    👍 {{vote_sum}}
-                  </div>
-                {{/if}}
+                <time class="article-card-date">記事</time>
               </div>
               <a href="{{url}}" class="article-card-button">
                 記事を読む
